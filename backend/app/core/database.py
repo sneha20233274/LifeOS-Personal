@@ -6,3 +6,9 @@ DATABASE_URL = "postgresql://postgres:Snehaash%401410@db.xofuzpjnjbbhxacxekip.su
 engine = create_engine(DATABASE_URL, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 Base = declarative_base()
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

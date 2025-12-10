@@ -1,7 +1,7 @@
 # backend/app/models/user.py
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, text
 from sqlalchemy.orm import relationship
-from core.database import Base
+from app.core.database import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -21,9 +21,8 @@ class User(Base):
     tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
     subtasks = relationship("Subtask", back_populates="user", cascade="all, delete-orphan")
     activities = relationship("Activity", back_populates="user", cascade="all, delete-orphan")
-    time_logs = relationship("TimeLog", back_populates="user", cascade="all, delete-orphan")
     habits = relationship("Habit", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
-
+    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
     def __repr__(self):
         return f"<User(username='{self.username}', email='{self.email_id}')>"

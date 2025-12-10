@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary   # or `asyncpg` if using async drivers — here we use psycopg2
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
+pydantic
