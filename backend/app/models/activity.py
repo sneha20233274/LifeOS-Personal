@@ -1,7 +1,7 @@
 # backend/app/models/activity.py
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, text, ForeignKey
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from core.database import Base
 
 class Activity(Base):
     __tablename__ = "activities"

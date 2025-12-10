@@ -4,7 +4,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint, ForeignKey
 )
 from sqlalchemy.orm import relationship
-from app.core.database import Base
+from core.database import Base
 
 class Goal(Base):
     __tablename__ = "goals"
@@ -25,7 +25,7 @@ class Goal(Base):
     importance_level = Column(Integer, default=1)   # 1..5
     percent_completion = Column(Float, default=0.0)
     motivations = Column(Text)  # JSON/text list; could be ARRAY/Text[] if postgres
-    metadata = Column(Text)     # free-form JSON string or use JSON type
+    metadata_info = Column(Text)     # free-form JSON string or use JSON type
     created_at = Column(TIMESTAMP(timezone=True), server_default=text("NOW()"))
     updated_at = Column(TIMESTAMP(timezone=True), server_default=text("NOW()"), onupdate=text("NOW()"))
 
