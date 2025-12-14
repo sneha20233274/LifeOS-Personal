@@ -3,12 +3,12 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 from models.enums import SummaryCategoryEnum
-
+from sqlalchemy import Text
 
 class CriteriaOut(BaseModel):
     criteria_id: int
     name: str
-
+    description: Optional[str]
     class Config:
         orm_mode = True
 

@@ -18,7 +18,7 @@ from crud.activity_crud import (
     get_time_spent_by_criteria,
 )
 
-router = APIRouter(prefix="/activities", tags=["activities"])
+router = APIRouter(tags=["activities"])
 
 
 # -------------------------------------------------------------------

@@ -13,7 +13,7 @@ from crud.goal_crud import (
     delete_goal,
 )
 
-router = APIRouter(prefix="/goals", tags=["goals"])
+router = APIRouter(tags=["goals"])
 
 
 # -------------------------------------------------------------------
