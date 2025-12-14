@@ -1,10 +1,10 @@
 # backend/app/routes/user_routes.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.schemas.user import UserOut
-from app.crud.user_crud import get_user
-from app.core.security import decode_token
+from core.database import get_db
+from schemas.user import UserOut
+from crud.user_crud import get_user
+from core.security import decode_token
 from jose import JWTError
 
 router = APIRouter(tags=["users"])

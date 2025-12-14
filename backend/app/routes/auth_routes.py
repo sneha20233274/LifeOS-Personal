@@ -3,13 +3,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from jose import JWTError
-from ..dependencies.db import get_db
-from app.schemas.user import UserCreate, UserOut
-from app.schemas.token import TokenOut, TokenRefresh
-from app.crud.user_crud import create_user, get_user_by_email, save_refresh_token, revoke_refresh_token, is_refresh_token_revoked, get_user
-from app.core.security import verify_password, create_access_token, create_refresh_token, decode_token
-from app.models.refresh_token import RefreshToken
-from app.models.user import User
+from dependencies.db import get_db
+from schemas.user import UserCreate, UserOut
+from schemas.token import TokenOut, TokenRefresh
+from crud.user_crud import create_user, get_user_by_email, save_refresh_token, revoke_refresh_token, is_refresh_token_revoked, get_user
+from core.security import verify_password, create_access_token, create_refresh_token, decode_token
+from models.refresh_token import RefreshToken
+from models.user import User
 
 router = APIRouter(tags=["auth"])
 

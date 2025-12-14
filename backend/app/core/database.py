@@ -1,7 +1,7 @@
 # backend/app/core/database.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-#from core.config import DATABASE_URL  # your config
+from core.config import DATABASE_URL  # your config
 DATABASE_URL = "postgresql://postgres:Snehaash%401410@db.xofuzpjnjbbhxacxekip.supabase.co:5432/postgres"
 engine = create_engine(DATABASE_URL, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
