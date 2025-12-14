@@ -2,7 +2,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
-from models.enums import SummaryCategoryEnum
+from app.models.enums import SummaryCategoryEnum
 from sqlalchemy import Text
 
 class CriteriaOut(BaseModel):

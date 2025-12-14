@@ -5,10 +5,10 @@ from sqlalchemy import func, desc
 from typing import List, Optional, Dict
 from datetime import datetime
 
-from models.activity import Activity
-from models.criteria import Criteria
-from schemas.activity import ActivityCreate, ActivityUpdate
-from models.enums import SummaryCategoryEnum
+from app.models.activity import Activity
+from app.models.criteria import Criteria
+from app.schemas.activity import ActivityCreate, ActivityUpdate
+from app.models.enums import SummaryCategoryEnum
 
 
 def create_activity(

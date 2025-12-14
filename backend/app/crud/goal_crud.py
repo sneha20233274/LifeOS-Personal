@@ -2,8 +2,8 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
 
-from models.goal import Goal
-from schemas.goal import GoalCreate, GoalUpdate
+from app.models.goal import Goal
+from app.schemas.goal import GoalCreate, GoalUpdate
 
 
 def create_goal(db: Session, user_id: int, obj_in: GoalCreate) -> Goal:

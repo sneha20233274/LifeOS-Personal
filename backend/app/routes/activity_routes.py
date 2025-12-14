@@ -3,10 +3,10 @@ from typing import List, Dict
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from schemas.activity import ActivityCreate, ActivityUpdate, ActivityOut
-from core.database import get_db
+from app.schemas.activity import ActivityCreate, ActivityUpdate, ActivityOut
+from app.core.database import get_db
 
-from crud.activity_crud import (
+from app.crud.activity_crud import (
     create_activity,
     get_activity,
     get_activities_by_user,

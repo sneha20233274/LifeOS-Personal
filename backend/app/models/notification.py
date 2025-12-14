@@ -1,7 +1,7 @@
 # backend/app/models/notification.py
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, text, ForeignKey
 from sqlalchemy.orm import relationship
-from core.database import Base
+from app.core.database import Base
 
 class Notification(Base):
     __tablename__ = "notifications"

@@ -4,7 +4,7 @@ from sqlalchemy import (
     ForeignKey
 )
 from sqlalchemy.orm import relationship
-from core.database import Base
+from app.core.database import Base
 
 class Subtask(Base):
     __tablename__ = "subtasks"

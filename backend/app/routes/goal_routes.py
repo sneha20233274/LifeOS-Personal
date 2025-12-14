@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, Request, HTTPException, status, Query
 from typing import List
 from sqlalchemy.orm import Session
   
-from schemas.goal import GoalCreate, GoalUpdate, GoalOut
-from core.database import get_db
+from app.schemas.goal import GoalCreate, GoalUpdate, GoalOut
+from app.core.database import get_db
 
-from crud.goal_crud import (
+from app.crud.goal_crud import (
     create_goal,
     get_goal,
     get_goals_by_user,

@@ -27,8 +27,8 @@ from sqlalchemy import (
     ForeignKey, Enum as SAEnum, Float, JSON, Table
 )
 from sqlalchemy.orm import relationship
-from core.database import Base
-from models.enums import SummaryCategoryEnum
+from app.core.database import Base
+from app.models.enums import SummaryCategoryEnum
 
 
 activity_criteria = Table(

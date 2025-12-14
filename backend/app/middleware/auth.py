@@ -4,8 +4,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from jose import jwt, JWTError
-from core.config import SECRET_KEY, ALGORITHM
-from utils.token_extract import extract_token      # should check header/cookies/query
+from app.core.config import SECRET_KEY, ALGORITHM
+from app.utils.token_extract import extract_token      # should check header/cookies/query
 import logging
 
 logger = logging.getLogger("app.auth")

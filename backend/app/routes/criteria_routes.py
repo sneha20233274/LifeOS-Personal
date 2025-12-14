@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from typing import List
 from sqlalchemy.orm import Session
 
-from core.database import get_db
-from models.criteria import Criteria
-from schemas.activity import CriteriaOut
+from app.core.database import get_db
+from app.models.criteria import Criteria
+from app.schemas.activity import CriteriaOut
 
 router = APIRouter( tags=["criteria"])
 

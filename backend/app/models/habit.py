@@ -1,7 +1,7 @@
 # backend/app/models/habit.py
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, Boolean, text, ForeignKey
 from sqlalchemy.orm import relationship
-from core.database import Base
+from app.core.database import Base
 
 class Habit(Base):
     __tablename__ = "habits"

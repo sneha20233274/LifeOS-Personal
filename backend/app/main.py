@@ -1,20 +1,20 @@
 # backend/app/main.py
 from fastapi import FastAPI
-from core.database import engine, Base
-from routes import auth_routes, user_routes,activity_routes,goal_routes,criteria_routes  # ensure package importable via __init__.py
-from models import user as user_model  # to ensure models are registered
-from models import refresh_token as refresh_model
+from app.core.database import engine, Base
+from app.routes import auth_routes, user_routes,activity_routes,goal_routes,criteria_routes  # ensure package importable via __init__.py
+from app.models import user as user_model  # to ensure models are registered
+from app.models import refresh_token as refresh_model
 
 # import other models so Base.metadata.create_all knows about them
-from models.task import Task
-from models.goal import Goal
-from models.subtask import Subtask
-from models.activity import Activity
-from models.habit import Habit
-from models.notification import Notification
+from app.models.task import Task
+from app.models.goal import Goal
+from app.models.subtask import Subtask
+from app.models.activity import Activity
+from app.models.habit import Habit
+from app.models.notification import Notification
 
 
-from middleware.auth import AuthMiddleware
+from app.middleware.auth import AuthMiddleware
 # Create tables (for dev). Use Alembic for production migrations.
 Base.metadata.create_all(bind=engine)
 

@@ -1,8 +1,8 @@
 # backend/app/crud/user_crud.py
 from sqlalchemy.orm import Session
-from models.user import User
-from models.refresh_token import RefreshToken
-from core.security import hash_password
+from app.models.user import User
+from app.models.refresh_token import RefreshToken
+from app.core.security import hash_password
 from datetime import datetime
 
 def get_user_by_email(db: Session, email: str) -> User | None:

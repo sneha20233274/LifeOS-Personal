@@ -1,7 +1,7 @@
 # backend/app/models/refresh_token.py
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey, text
 from sqlalchemy.orm import relationship
-from core.database import Base
+from app.core.database import Base
 
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"

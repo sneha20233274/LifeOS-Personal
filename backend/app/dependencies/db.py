@@ -1,5 +1,5 @@
 # backend/app/dependencies/db.py
-from core.database import SessionLocal
+from app.core.database import SessionLocal
 from typing import Generator
 
 def get_db() -> Generator:
