@@ -45,3 +45,11 @@ leaderboards–streaks,badges challenges
 
 
 full docs link - https://docs.google.com/document/d/1X53qFy0RqEOyI-46NH5-GUECAVScwelHdxhPqX0mBZo/edit?usp=sharing
+
+testing user demo -
+{
+  "username": "Aashutosh",
+  "email_id": "aashu1410@gmail.com",
+  "password": "Aashu@1410",
+  "timezone": "UTC"
+}
