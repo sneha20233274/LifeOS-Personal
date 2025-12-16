@@ -42,9 +42,10 @@ task—-automatic move tasks to next avaliable slot….
 23) Mood tracker meditation sessions-integrate free guided mediations….
 24) Add friends and accountability partners…view others progress
 leaderboards–streaks,badges challenges
+25) dependency graph feature in subtask and task and auto completion feature subtask_>task->goal.
 
 
-full docs link - https://docs.google.com/document/d/1X53qFy0RqEOyI-46NH5-GUECAVScwelHdxhPqX0mBZo/edit?usp=sharing
+
 
 testing user demo -
 {
