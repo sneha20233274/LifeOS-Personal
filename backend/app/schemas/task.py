@@ -1,29 +1,34 @@
 # backend/app/schemas/task.py
-from pydantic import BaseModel
+
 from typing import Optional
-from datetime import date, datetime
+from pydantic import BaseModel
+
 
 class TaskCreate(BaseModel):
     task_name: str
-    task_description: Optional[str] = None
-    task_deadline: Optional[date] = None
-    difficulty_level: Optional[int] = 1
+    description: Optional[str] = None
     goal_id: int
 
+    difficulty: int = 1
+    depends_on_task_id: Optional[int] = None
+
+
 class TaskUpdate(BaseModel):
-    task_name: Optional[str]
-    task_description: Optional[str]
-    task_deadline: Optional[date]
-    difficulty_level: Optional[int]
-    percent_completion: Optional[float]
+    task_name: Optional[str] = None
+    description: Optional[str] = None
+    difficulty: Optional[int] = None
+
 
 class TaskOut(BaseModel):
     task_id: int
-    goal_id: int
-    user_id: int
     task_name: str
+    description: Optional[str]
+
+    difficulty: int
     percent_completion: float
-    created_at: datetime
+    achieved: bool
+
+    depends_on_task_id: Optional[int]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

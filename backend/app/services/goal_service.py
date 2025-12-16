@@ -1,6 +1,6 @@
 from sqlalchemy import func
-from models.task import Task
-from crud.goal_crud import get_goal
+from app.models.task import Task
+from app.crud.goal_crud import get_goal
 from sqlalchemy.orm import Session
 
 def recompute_goal_completion(db: Session, goal_id: int) -> None:

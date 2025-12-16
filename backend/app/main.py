@@ -1,7 +1,7 @@
 # backend/app/main.py
 from fastapi import FastAPI
 from app.core.database import engine, Base
-from app.routes import auth_routes, user_routes,activity_routes,goal_routes,criteria_routes  # ensure package importable via __init__.py
+from app.routes import auth_routes, user_routes,activity_routes,goal_routes,criteria_routes,task_routes,subtask_routes  # ensure package importable via __init__.py
 from app.models import user as user_model  # to ensure models are registered
 from app.models import refresh_token as refresh_model
 
@@ -29,3 +29,5 @@ app.include_router(user_routes.router, prefix="/users")
 app.include_router(criteria_routes.router, prefix='/criteria')
 app.include_router(activity_routes.router, prefix="/activities")
 app.include_router(goal_routes.router, prefix="/goals")
+app.include_router(task_routes.router, prefix="/tasks")
+app.include_router(subtask_routes.router, prefix="/subtasks")
