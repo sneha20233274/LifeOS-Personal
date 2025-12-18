@@ -21,6 +21,7 @@ def create_goal(db: Session, user_id: int, obj_in: GoalCreate) -> Goal:
         motivations=obj_in.motivations,
         percent_completion=0.0,   # 🔒 system default
     )
+    print("CREATED GOAL:", db_obj)
 
     db.add(db_obj)
     db.commit()

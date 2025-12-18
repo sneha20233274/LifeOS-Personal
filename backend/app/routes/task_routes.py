@@ -16,7 +16,7 @@ from app.crud.task_crud import (
 
 
 router = APIRouter(
-    prefix="/tasks",
+   
     tags=["Tasks"]
 )
 
@@ -39,7 +39,8 @@ def create_task_route(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Unauthorized"
         )
-    return create_task(db, payload, current_user.user_id)
+    return create_task(db, payload, int(current_user['sub']))
+
 
 
 @router.get("/{task_id}", response_model=TaskOut)

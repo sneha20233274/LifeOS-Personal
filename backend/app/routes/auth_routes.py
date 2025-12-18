@@ -38,21 +38,43 @@ def login(payload: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/refresh", response_model=TokenOut)
 def refresh_token(payload: TokenRefresh, db: Session = Depends(get_db)):
+    print("==== REFRESH TOKEN DEBUG START ====")
+    print("Incoming refresh token:", payload.refresh_token)
+
     try:
         decoded = decode_token(payload.refresh_token)
-        if decoded.get("type") != "refresh":
+        print("Decoded token payload:", decoded)
+
+        token_type = decoded.get("type")
+        print("Token type:", token_type)
+
+        if token_type != "refresh":
+            print("❌ Token type mismatch")
             raise HTTPException(status_code=401, detail="Invalid token type")
+
         jti = decoded.get("jti")
-        # Check revoked
-        if is_refresh_token_revoked(db, jti):
+        print("Extracted JTI from token:", jti)
+
+        is_revoked = is_refresh_token_revoked(db, jti)
+        print("Is token revoked according to DB?", is_revoked)
+
+        if is_revoked:
+            print("❌ Token is considered revoked")
             raise HTTPException(status_code=401, detail="Token revoked")
+
         user_id = decoded.get("sub")
-    except JWTError:
+        print("User ID from token:", user_id)
+
+    except JWTError as e:
+        print("❌ JWT Error:", str(e))
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-    # Issue new access token (and optional new refresh token rotation if wanted)
     access = create_access_token(subject=str(user_id))
+    print("✅ New access token generated")
+    print("==== REFRESH TOKEN DEBUG END ====")
+
     return TokenOut(access_token=access, refresh_token=payload.refresh_token)
+
 
 @router.post("/logout")
 def logout(payload: TokenRefresh, db: Session = Depends(get_db)):

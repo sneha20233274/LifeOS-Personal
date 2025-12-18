@@ -1,5 +1,5 @@
 # backend/app/routes/user_routes.py
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,Header
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.schemas.user import UserOut
@@ -34,7 +34,7 @@ def get_current_user_from_bearer(authorization: str | None, db: Session):
     return user
 
 @router.get("/account/me", response_model=UserOut)
-def read_current_user(authorization: str | None = None, db: Session = Depends(get_db)):
+def read_current_user(authorization: str | None = Header(None), db: Session = Depends(get_db)):
     # FastAPI automatically injects header if you name param `authorization: str = Header(None)`
     # To keep it simple we retrieve from function arg.
     user = get_current_user_from_bearer(authorization, db)

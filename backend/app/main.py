@@ -4,6 +4,7 @@ from app.core.database import engine, Base
 from app.routes import auth_routes, user_routes,activity_routes,goal_routes,criteria_routes,task_routes,subtask_routes  # ensure package importable via __init__.py
 from app.models import user as user_model  # to ensure models are registered
 from app.models import refresh_token as refresh_model
+from app.crud import goal_crud
 
 # import other models so Base.metadata.create_all knows about them
 from app.models.task import Task
@@ -21,7 +22,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Routine Planner Auth")
 
 app.add_middleware(AuthMiddleware, protected = [
-  "/users","/goals","/activities"
+  "/users","/goals","/activities","/tasks","/subtasks"
 ])
 
 app.include_router(auth_routes.router, prefix="/auth")
@@ -31,3 +32,5 @@ app.include_router(activity_routes.router, prefix="/activities")
 app.include_router(goal_routes.router, prefix="/goals")
 app.include_router(task_routes.router, prefix="/tasks")
 app.include_router(subtask_routes.router, prefix="/subtasks")
+
+  

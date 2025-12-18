@@ -33,8 +33,33 @@ def api_create_goal(
     goal_in: GoalCreate,
     db: Session = Depends(get_db),
 ):
-    user_id = int(request.state.user["sub"])
-    return create_goal(db=db, user_id=user_id, obj_in=goal_in)
+    # 1️⃣ Debug user payload from middleware
+    if not hasattr(request.state, "user") or request.state.user is None:
+        print("❌ No user info in request.state.user")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    else:
+        print("✅ User payload from request.state.user:", request.state.user)
+
+    # 2️⃣ Debug user_id extraction
+    try:
+        user_id = int(request.state.user["sub"])
+        print("✅ Extracted user_id:", user_id)
+    except Exception as e:
+        print("❌ Error extracting user_id:", e)
+        raise HTTPException(status_code=401, detail="Invalid user info")
+
+    # 3️⃣ Debug incoming goal data
+    print("✅ Incoming goal data (goal_in):", goal_in)
+
+    # 4️⃣ Create goal
+    try:
+        goal_obj = create_goal(db=db, user_id=user_id, obj_in=goal_in)
+        print("✅ Goal created successfully:", goal_obj)
+    except Exception as e:
+        print("❌ Error creating goal:", e)
+        raise HTTPException(status_code=500, detail="Failed to create goal")
+
+    return goal_obj
 
 
 # -------------------------------------------------------------------

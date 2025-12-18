@@ -83,6 +83,7 @@ def update_subtask_progress(
     db.refresh(subtask)
 
     # -------- CASCADE UP --------
+    print(subtask.achieved)
     recompute_task_completion(db, subtask.task_id)
 
     return subtask

@@ -71,4 +71,5 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         # attach payload for handlers
         request.state.user = payload
+        print(request.state.user)
         return await call_next(request)

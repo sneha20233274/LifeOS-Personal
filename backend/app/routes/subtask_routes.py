@@ -20,7 +20,7 @@ from app.crud.subtask_crud import (
 
 
 router = APIRouter(
-    prefix="/subtasks",
+   
     tags=["Subtasks"]
 )
 
@@ -47,7 +47,7 @@ def create_subtask_route(
             detail="Unauthorized"
         )
 
-    return create_subtask(db, payload, current_user.user_id)
+    return create_subtask(db, payload, current_user["sub"])
 
 @router.get("/{subtask_id}", response_model=SubtaskOut)
 def get_subtask_route(
@@ -124,10 +124,12 @@ def complete_checkbox_subtask(
     )
 
 
+from fastapi import Query
+
 @router.post("/{subtask_id}/progress", response_model=SubtaskOut)
 def progress_subtask(
     subtask_id: int,
-    increment: float,
+    increment: float = Query(..., gt=0),
     db: Session = Depends(get_db)
 ):
     subtask = get_subtask(db, subtask_id)
@@ -142,4 +144,30 @@ def progress_subtask(
         subtask,
         increment=increment
     )
+
+from app.services.subtask_service import  update_subtask_progress
+
+
+
+@router.patch(
+    "/{subtask_id}/progress",
+    response_model=SubtaskOut
+)
+def update_subtask_progress_route(
+    subtask_id: int,
+    payload: dict,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    subtask = get_subtask(db, subtask_id)
+    if not subtask:
+        raise HTTPException(404, "Subtask not found")
+
+    return update_subtask_progress(
+        db,
+        subtask,
+        increment=payload.get("increment"),
+        mark_done=payload.get("mark_done")
+    )
+
 
