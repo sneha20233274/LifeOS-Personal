@@ -54,3 +54,6 @@ testing user demo -
   "password": "Aashu@1410",
   "timezone": "UTC"
 }
+chatbot ui interface-
+<img width="1109" height="695" alt="Screenshot 2026-01-09 150400" src="https://github.com/user-attachments/assets/b34ce8da-d4a7-44f5-add0-4d5448cb9b14" />
+
