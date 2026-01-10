@@ -16,12 +16,13 @@ from app.crud.subtask_crud import (
     update_subtask_fields,
     delete_subtask
 )
-
+from app.utils.oauth2_scheme  import swagger_bearer_auth
 
 
 router = APIRouter(
    
-    tags=["Subtasks"]
+    tags=["Subtasks"],
+    dependencies=[Depends(swagger_bearer_auth)]
 )
 
 @router.post(
