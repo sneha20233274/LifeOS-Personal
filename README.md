@@ -59,3 +59,5 @@ chatbot ui interface-
 
 ![WhatsApp Image 2026-01-10 at 3 01 17 PM](https://github.com/user-attachments/assets/d36d2696-4566-4ece-bd31-8a95a10407ce)
 LifeOs multiagent planner graph.
+<img width="2543" height="1292" alt="image" src="https://github.com/user-attachments/assets/a788c8e6-87e3-4015-bb9e-50c4741859e2" />
+frontend Ui for planner chatbot
