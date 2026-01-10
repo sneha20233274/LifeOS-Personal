@@ -1,4 +1,4 @@
-from typing import TypedDict, Annotated, Dict, Any, List
+from typing import Optional, TypedDict, Annotated, Dict, Any, List
 from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
 class ChatState(TypedDict, total=False):
@@ -12,6 +12,11 @@ class ChatState(TypedDict, total=False):
     fitness_plan: Dict[str, Any]        # active fitness plan only
     diet_plan: Dict[str, Any]           # active diet plan only
 
+        # NEW
+    requires_execution: bool
+    proposals: List[Dict[str, Any]]   # pure data, no DB logic
+    execution_result: Optional[Dict[str, Any]]
+    
     feedback: str
     approved: bool
 
