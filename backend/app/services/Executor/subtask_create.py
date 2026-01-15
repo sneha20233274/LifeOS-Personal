@@ -20,7 +20,7 @@ class CreateSubtaskExecutor(BaseExecutor):
         # Resolve parent task_id from dependency proposals
         # -------------------------------------------------
         task_id = None
-
+        subtask_depends_on = None
         for parent in all_proposals:
             if (
                 parent.proposal_id in (proposal.depends_on or [])
@@ -29,14 +29,12 @@ class CreateSubtaskExecutor(BaseExecutor):
             ):
                 task_id = parent.execution_result.get("task_id")
                 break
-
-        if task_id is None:
-            # This should never happen if dependency_guard is correct,
-            # but we fail fast to avoid corrupt data.
-            raise RuntimeError(
-                f"Cannot create subtask without executed parent task "
-                f"(proposal_id={proposal.proposal_id})"
-            )
+            if( parent.action_type == "create_subtask"
+                and parent.execution_result
+                and parent.proposal_id in (proposal.depends_on or [])
+            ):
+                subtask_depends_on = parent.execution_result.get("subtask_id")
+        
 
         # -----------------------------
         # Idempotency check
@@ -52,6 +50,7 @@ class CreateSubtaskExecutor(BaseExecutor):
         )
 
         if existing:
+            print(f"[CreateSubtaskExecutor] Deduplicated existing subtask_id={existing.subtask_id}")
             return {
                 "status": "success",
                 "data": {
@@ -72,15 +71,16 @@ class CreateSubtaskExecutor(BaseExecutor):
             current_value=0.0,
             weight=payload.get("weight", 1),
             deadline=payload.get("deadline"),
-            order_index=payload["order_index"],
+        
             # NOTE: subtask→subtask dependencies are handled
             # by the rewire executor, not here
-            depends_on_subtask_id=None,
+            depends_on_subtask_id=subtask_depends_on,
         )
+
 
         db.add(subtask)
         db.flush()
-
+        print(f"[CreateSubtaskExecutor] Created new subtask_id={subtask.subtask_id}")
         return {
             "status": "success",
             "data": {

@@ -2,7 +2,7 @@ from langgraph.graph import StateGraph, START, END
 from langchain_groq import ChatGroq
 from my_agent.chatstate import ChatState
 from langchain_core.messages import HumanMessage
-
+from my_agent.checkpointer import checkpointer
 
 
 
@@ -115,7 +115,11 @@ graph.add_conditional_edges(
 graph.add_edge("wait_for_approval", "post_execution_reflect")
 graph.add_edge("post_execution_reflect", END)
 
-chatbot = graph.compile()
+
+chatbot = graph.compile(
+    checkpointer=checkpointer
+)
+
 
 
 if __name__ == "__main__":

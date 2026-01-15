@@ -1,9 +1,11 @@
 from langgraph.checkpoint.postgres import PostgresSaver
 from psycopg_pool import ConnectionPool
 from dotenv import load_dotenv
+import os
+
 load_dotenv()
 
-import os
+
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
@@ -16,3 +18,4 @@ pool = ConnectionPool(
 )
 
 checkpointer = PostgresSaver(conn=pool)
+

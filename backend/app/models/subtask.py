@@ -79,8 +79,11 @@ class Subtask(Base):
         nullable=True
     )
 
+   
     # -------- scheduling --------
+    
     deadline = Column(Date)
+
 
     created_at = Column(
         TIMESTAMP(timezone=True),

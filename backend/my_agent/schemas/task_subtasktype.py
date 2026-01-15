@@ -20,6 +20,7 @@ class GeneratedSubtask(BaseModel):
     deadline: Optional[date] = None
 
     depends_on_subtask_key: Optional[str] = None
+    
 
 
 class GeneratedTask(BaseModel):

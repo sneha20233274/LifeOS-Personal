@@ -1,30 +1,70 @@
 from sqlalchemy import (
-    Column, Integer, String, ForeignKey, JSON,
-    TIMESTAMP, text
+    Column,
+    Integer,
+    String,
+    JSON,
+    TIMESTAMP,
+    text,
+    ForeignKey,
+    Enum as SAEnum
 )
+from sqlalchemy.orm import relationship
 from app.core.database import Base
+import enum
+
+
+class ProposalStatus(str, enum.Enum):
+    DRAFT = "DRAFT"        # created, not shown to user yet
+    PENDING = "PENDING"    # shown to user, waiting for approval
+    APPROVED = "APPROVED"  # approved by human
+    REJECTED = "REJECTED"
+    EXECUTED = "EXECUTED"
+    SKIPPED = "SKIPPED"
 
 
 class ActionProposal(Base):
     __tablename__ = "action_proposals"
 
     proposal_id = Column(Integer, primary_key=True, autoincrement=True)
-    run_id = Column(String, ForeignKey("agent_runs.run_id", ondelete="CASCADE"))
 
-    action_type = Column(String(50), nullable=False)
-    payload = Column(JSON, nullable=False)
+    # tie proposal to langgraph run
+    thread_id = Column(String(100), nullable=False, index=True)
 
-    status = Column(
-        String(20),
-        default="DRAFT"
-        # DRAFT | APPROVED | REJECTED | EXECUTED
+    user_id = Column(
+        Integer,
+        ForeignKey("users.user_id", ondelete="CASCADE"),
+        nullable=False
     )
 
-    reason = Column(String, nullable=True)
+    action_type = Column(String(100), nullable=False)
 
-    version = Column(Integer, default=1)
+    # JSON payload (editable by human)
+    payload = Column(JSON, nullable=False)
+
+    # proposal dependency graph
+    depends_on = Column(JSON, nullable=True)  # list[int]
+
+    status = Column(
+        SAEnum(ProposalStatus, name="proposal_status_enum"),
+        default=ProposalStatus.DRAFT,
+        nullable=False,
+        index=True
+    )
 
     created_at = Column(
         TIMESTAMP(timezone=True),
         server_default=text("NOW()")
     )
+     # ✅ ONLY NEW FIELD (MINIMAL, POWERFUL)
+    execution_result = Column(JSON, nullable=True)
+    
+    user = relationship("User")
+
+    def __repr__(self):
+        return (
+            f"<ActionProposal("
+            f"id={self.proposal_id}, "
+            f"type={self.action_type}, "
+            f"status={self.status}"
+            f")>"
+        )

@@ -4,6 +4,9 @@ def diff_schedules(
 ) -> list[dict]:
     """
     Identify which subtasks shift in time.
+    Compares two versions of a subtask schedule and finds which subtasks changed start date.
+
+It returns only the differences.
     """
 
     old_map = {s["subtask_id"]: s for s in old}

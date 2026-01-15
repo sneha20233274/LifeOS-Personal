@@ -2,6 +2,10 @@ from sqlalchemy import (
     Column, Integer, String, TIMESTAMP, text
 )
 from app.core.database import Base
+from backend.app.services.Executor import activity
+
+# AgentRun represents one execution of your AI agent workflow.
+# Each time the user talks to the agent and a LangGraph run starts → one AgentRun row is created.
 
 
 class AgentRun(Base):
@@ -17,8 +21,16 @@ class AgentRun(Base):
         # RUNNING | WAITING_APPROVAL | COMPLETED | ABORTED
     )
 
-    current_node = Column(String(100), nullable=True)
+    # | Status           | Meaning                   |
+# | ---------------- | ------------------------- |
+# | RUNNING          | Agent is executing        |
+# | WAITING_APPROVAL | Paused for human approval |
+# | COMPLETED        | Finished successfully     |
+# | ABORTED          | Cancelled or error        |
 
+
+    current_node = Column(String(100), nullable=True)
+    # Stores the LangGraph node name currently executing.
     created_at = Column(
         TIMESTAMP(timezone=True),
         server_default=text("NOW()")
@@ -29,3 +41,6 @@ class AgentRun(Base):
         server_default=text("NOW()"),
         onupdate=text("NOW()")
     )
+    # Automatically updates whenever row is modified.
+
+# So you know last activity time.

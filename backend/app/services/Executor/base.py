@@ -3,7 +3,6 @@ from typing import Dict, Any
 from sqlalchemy.orm import Session
 from my_agent.models.action_proposal import ActionProposal
 
-
 class ExecutorResult(dict):
     """
     Simple structured result:

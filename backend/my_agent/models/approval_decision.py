@@ -4,6 +4,12 @@ from sqlalchemy import (
 )
 from app.core.database import Base
 
+# It stores human decisions on AI-generated proposals.
+# Every time a human clicks Approve / Reject, one row is inserted here.
+
+# So:
+
+# ApprovalDecision = Audit log of human judgment.
 
 class ApprovalDecision(Base):
     __tablename__ = "approval_decisions"
@@ -14,10 +20,16 @@ class ApprovalDecision(Base):
         Integer,
         ForeignKey("action_proposals.proposal_id", ondelete="CASCADE")
     )
+#     ondelete="CASCADE"
+
+# If proposal is deleted → decision auto deletes.
 
     approved_by = Column(Integer, nullable=False)
+    # Which human user approved/rejected.
     decision = Column(String(20), nullable=False)
+    # APPROVED | REJECTED
     comment = Column(String, nullable=True)
+    # Optional explanation from human.
 
     created_at = Column(
         TIMESTAMP(timezone=True),

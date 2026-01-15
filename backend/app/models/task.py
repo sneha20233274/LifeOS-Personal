@@ -22,7 +22,7 @@ class Task(Base):
     goal_id = Column(
         Integer,
         ForeignKey("goals.goal_id", ondelete="CASCADE"),
-        nullable=False
+        nullable=True
     )
 
     task_name = Column(String(200), nullable=False)
