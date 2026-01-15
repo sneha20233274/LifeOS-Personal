@@ -12,8 +12,9 @@ from app.crud.goal_crud import (
     update_goal,
     delete_goal,
 )
+from app.utils.oauth2_scheme  import swagger_bearer_auth
 
-router = APIRouter(tags=["goals"])
+router = APIRouter(tags=["goals"], dependencies=[Depends(swagger_bearer_auth)])
 
 
 # -------------------------------------------------------------------

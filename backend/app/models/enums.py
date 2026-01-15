@@ -11,3 +11,12 @@ class SummaryCategoryEnum(str, enum.Enum):
     social = "social"
     commute = "commute"
     other = "other"
+
+
+#productive categories
+# productive_categories = {
+#     SummaryCategoryEnum.work,
+#     SummaryCategoryEnum.learning,
+#     SummaryCategoryEnum.exercise,
+#     SummaryCategoryEnum.admin,
+# }

@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.criteria import Criteria
 from app.schemas.activity import CriteriaOut
-
-router = APIRouter( tags=["criteria"])
+from app.utils.oauth2_scheme  import swagger_bearer_auth
+router = APIRouter( tags=["criteria"], dependencies=[Depends(swagger_bearer_auth)])
 
 
 @router.get("/", response_model=List[CriteriaOut], summary="Get all criteria")

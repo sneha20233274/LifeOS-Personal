@@ -18,7 +18,9 @@ from my_agent.nodes.fitness_nodes.fitness_optimiser_node import fitness_optimiso
 from my_agent.nodes.diet_nodes.diet_planner_node import diet_planer_node
 from my_agent.nodes.diet_nodes.diet_evaluator_node import diet_evaluator_node
 from my_agent.nodes.diet_nodes.diet_optimisor_node import diet_optimisor_node
-
+from my_agent.nodes.proposal_action_nodes.proposal_buider_node import proposal_builder_node
+from my_agent.nodes.proposal_action_nodes.wait_for_approval_node import wait_for_approval_node
+from my_agent.nodes.proposal_action_nodes.post_execution_reflect_node import post_execution_reflect_node
 
 
 
@@ -33,6 +35,8 @@ def conditional_decision(state: ChatState):
 def conditonal_intent_resolver(state: ChatState):
     return state["intent"]
 
+def execution_router(state: ChatState):
+    return "execute" if state.get("requires_execution") else "no_execute"
 
 graph = StateGraph(ChatState)
 
@@ -48,6 +52,9 @@ graph.add_node('fitness_optimisor_node', fitness_optimisor_node)
 graph.add_node('diet_planer', diet_planer_node)
 graph.add_node('diet_evaluator_node', diet_evaluator_node)
 graph.add_node('diet_optimisor_node', diet_optimisor_node)
+graph.add_node("proposal_builder", proposal_builder_node)
+graph.add_node("wait_for_approval", wait_for_approval_node)
+graph.add_node("post_execution_reflect", post_execution_reflect_node)
 
 
 
@@ -60,15 +67,54 @@ graph.add_conditional_edges('intent_resolver', conditonal_intent_resolver,
 })
 graph.add_edge('goal_prompt_builder_node', 'routine_generator_node')
 graph.add_edge('routine_generator_node', 'goal_evaluator_node')
-graph.add_conditional_edges('goal_evaluator_node',conditional_decision,{'need_improvement':'goal_optimisor_node','approved' : END})
+graph.add_conditional_edges(
+    "goal_evaluator_node",
+    conditional_decision,
+    {
+        "need_improvement": "goal_optimisor_node",
+        "approved": "proposal_builder"
+    }
+)
+
 graph.add_edge('goal_optimisor_node', 'goal_evaluator_node')
 
 graph.add_edge('fitness_planer', 'fitness_evalautor_node')
-graph.add_conditional_edges('fitness_evalautor_node',conditional_decision,{'need_improvement':'fitness_optimisor_node','approved' : END})
+
+graph.add_conditional_edges(
+    "fitness_evalautor_node",
+    conditional_decision,
+    {
+        "need_improvement": "fitness_optimisor_node",
+        "approved": "proposal_builder"
+    }
+)
+
 graph.add_edge('fitness_optimisor_node', 'fitness_evalautor_node')
 graph.add_edge('diet_planer', 'diet_evaluator_node')
-graph.add_conditional_edges('diet_evaluator_node',conditional_decision,{'need_improvement':'diet_optimisor_node','approved' : END})
+
+graph.add_conditional_edges(
+    "diet_evaluator_node",
+    conditional_decision,
+    {
+        "need_improvement": "diet_optimisor_node",
+        "approved": "proposal_builder"
+    }
+)
+
 graph.add_edge('diet_optimisor_node', 'diet_evaluator_node')
+
+graph.add_conditional_edges(
+    "proposal_builder",
+    execution_router,
+    {
+        "execute": "wait_for_approval",
+        "no_execute": END
+    }
+)
+
+graph.add_edge("wait_for_approval", "post_execution_reflect")
+graph.add_edge("post_execution_reflect", END)
+
 chatbot = graph.compile()
 
 

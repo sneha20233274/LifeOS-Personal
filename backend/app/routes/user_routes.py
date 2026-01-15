@@ -6,8 +6,9 @@ from app.schemas.user import UserOut
 from app.crud.user_crud import get_user
 from app.core.security import decode_token
 from jose import JWTError
+from app.utils.oauth2_scheme  import swagger_bearer_auth
 
-router = APIRouter(tags=["users"])
+router = APIRouter(tags=["users"],dependencies=[Depends(swagger_bearer_auth)])
 
 def get_current_user_from_bearer(authorization: str | None, db: Session):
     # Expect header Authorization: Bearer <token>

@@ -17,8 +17,8 @@ from app.crud.activity_crud import (
     get_time_spent_by_summary_category,
     get_time_spent_by_criteria,
 )
-
-router = APIRouter(tags=["activities"])
+from app.utils.oauth2_scheme  import swagger_bearer_auth
+router = APIRouter(tags=["activities"], dependencies=[Depends(swagger_bearer_auth)])
 
 
 # -------------------------------------------------------------------

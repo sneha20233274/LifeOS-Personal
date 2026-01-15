@@ -12,12 +12,13 @@ from app.crud.task_crud import (
     update_task_fields,
     delete_task
 )
-
+from app.utils.oauth2_scheme  import swagger_bearer_auth
 
 
 router = APIRouter(
    
-    tags=["Tasks"]
+    tags=["Tasks"],
+    dependencies=[Depends(swagger_bearer_auth)]
 )
 
 
