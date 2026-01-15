@@ -10,7 +10,8 @@ __pycache__/
 # Ignore Virtual Environments
 venv/
 env/
-
+node_modules/
+osvenv/
 # Ignore IDE settings
 .vscode/
 .idea/
