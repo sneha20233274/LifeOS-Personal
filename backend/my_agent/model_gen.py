@@ -22,7 +22,9 @@ from my_agent.nodes.proposal_action_nodes.proposal_buider_node import proposal_b
 from my_agent.nodes.proposal_action_nodes.wait_for_approval_node import wait_for_approval_node
 from my_agent.nodes.proposal_action_nodes.post_execution_reflect_node import post_execution_reflect_node
 
-
+from my_agent.nodes.create_task_subtask.task_creator_node import task_creator_node
+from my_agent.nodes.create_task_subtask.task_creator_optimisor_node import task_optimiser_node
+from my_agent.nodes.create_task_subtask.task_creator_evaluator_node import task_evaluator_node
 
 
 
@@ -56,6 +58,11 @@ graph.add_node("proposal_builder", proposal_builder_node)
 graph.add_node("wait_for_approval", wait_for_approval_node)
 graph.add_node("post_execution_reflect", post_execution_reflect_node)
 
+#create task
+graph.add_node('task_creator_node', task_creator_node)
+graph.add_node('task_optimiser_node', task_optimiser_node)
+graph.add_node('task_evaluator_node', task_evaluator_node)
+
 
 
 graph.add_edge(START , 'intent_resolver')
@@ -63,7 +70,8 @@ graph.add_conditional_edges('intent_resolver', conditonal_intent_resolver,
 {
   'fitness': 'fitness_planer',
   'diet': 'diet_planer',
-  'goal': 'goal_prompt_builder_node'
+  'goal': 'goal_prompt_builder_node',
+  'task': 'task_creator_node',
 })
 graph.add_edge('goal_prompt_builder_node', 'routine_generator_node')
 graph.add_edge('routine_generator_node', 'goal_evaluator_node')
@@ -115,6 +123,15 @@ graph.add_conditional_edges(
 graph.add_edge("wait_for_approval", "post_execution_reflect")
 graph.add_edge("post_execution_reflect", END)
 
+graph.add_edge('task_creator_node', 'task_evaluator_node')
+graph.add_conditional_edges(
+    "task_evaluator_node",
+    conditional_decision,
+    {
+        "need_improvement": "task_optimiser_node",
+        "approved": "proposal_builder"
+    }
+)
 
 chatbot = graph.compile(
     checkpointer=checkpointer

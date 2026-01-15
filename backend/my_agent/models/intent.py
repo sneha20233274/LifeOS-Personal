@@ -3,6 +3,8 @@ from enum import Enum
 
 class Intent(str, Enum):
     GOAL = "goal"
+    TASK = "task"
+   
     FITNESS = "fitness"
     DIET = "diet"
 

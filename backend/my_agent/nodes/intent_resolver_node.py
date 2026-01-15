@@ -16,6 +16,8 @@ def intent_resolver_node(
     - If fitness related, respond with 'fitness'.
     - If diet related, respond with 'diet'.
     - If goal creation related, respond with 'goal'.
+    
+    - If it is regarding creating task or subtask not related to fitness or diet, respond with 'task'.
     - Otherwise, respond with an empty string.
     """
     messages = [
