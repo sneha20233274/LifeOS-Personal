@@ -1,7 +1,7 @@
 import {
   CheckSquare,
   Clock,
-  Flag,
+  Link2,
   MoreVertical,
   Edit,
   Trash2,
@@ -9,121 +9,105 @@ import {
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
-
+import { useNavigate } from "react-router-dom";
 
 export function TaskCard({ task }) {
-  
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "high":
-        return "text-red-600 bg-red-50 border-red-200";
-      case "medium":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "low":
-        return "text-green-600 bg-green-50 border-green-200";
-      default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
-    }
-  };
+  const navigate = useNavigate();
 
-  const getStatusIcon = (status) => {
-    if (status === "completed") return "✓";
-    if (status === "in-progress") return "⏳";
-    return "○";
+  const difficultyLabel = (d) => {
+    if (d >= 4) return "Hard";
+    if (d === 3) return "Medium";
+    return "Easy";
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group border-l-4 border-blue-500">
+    <div
+      onClick={() => navigate(`/tasks/${task.task_id}/subtasks`)}
+      className="relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group border-l-4 border-blue-500 cursor-pointer"
+    >
       <div className="p-6">
-        {/* Top Section */}
+        {/* HEADER */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-3 flex-1">
-            <Checkbox className="mt-1" checked={task.status === "completed"} />
+            <Checkbox checked={task.achieved} />
+
             <div className="flex-1">
               <h3
-                className={`text-lg font-bold mb-2 group-hover:text-blue-600 transition-colors ${
-                  task.status === "completed"
+                className={`text-lg font-bold mb-1 transition-colors ${
+                  task.achieved
                     ? "line-through text-gray-400"
-                    : "text-gray-900"
+                    : "text-gray-900 group-hover:text-blue-600"
                 }`}
               >
-                {task.title}
+                {task.task_name}
               </h3>
-              <p className="text-gray-600 text-sm line-clamp-2">
-                {task.description}
-              </p>
+
+              {task.description && (
+                <p className="text-gray-600 text-sm line-clamp-2">
+                  {task.description}
+                </p>
+              )}
             </div>
           </div>
 
           <Button
             variant="ghost"
             size="icon"
+            onClick={(e) => e.stopPropagation()}
             className="opacity-0 group-hover:opacity-100 transition-opacity"
           >
             <MoreVertical className="w-5 h-5" />
           </Button>
         </div>
 
-        {/* Tags Section */}
+        {/* META */}
         <div className="flex flex-wrap gap-2 mb-4">
-          <span
-            className={`px-3 py-1 rounded-lg text-xs font-medium border ${getPriorityColor(
-              task.priority
-            )}`}
-          >
-            <Flag className="w-3 h-3 inline mr-1" />
-            {task.priority.toUpperCase()}
-          </span>
           <span className="px-3 py-1 rounded-lg text-xs font-medium bg-blue-100 text-blue-700">
-            {task.category}
+            Difficulty: {difficultyLabel(task.difficulty)}
           </span>
-          {task.tags.map((tag, index) => (
-            <span
-              key={index}
-              className="px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-700"
-            >
-              #{tag}
+
+          {task.depends_on_task_id && (
+            <span className="px-3 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 flex items-center gap-1">
+              <Link2 className="w-3 h-3" />
+              Depends on #{task.depends_on_task_id}
             </span>
-          ))}
+          )}
         </div>
 
-        {/* Time & Stats Section */}
-        <div className="grid grid-cols-2 gap-4 mb-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-blue-600" />
-            <div>
-              <div className="text-xs text-gray-500">Due Date</div>
-              <div className="text-sm font-semibold text-gray-900">
-                {task.dueDate}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckSquare className="w-4 h-4 text-blue-600" />
-            <div>
-              <div className="text-xs text-gray-500">Subtasks</div>
-              <div className="text-sm font-semibold text-gray-900">
-                {task.subtasksCompleted}/{task.totalSubtasks}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Assignee & Time */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-              {task.assignee.charAt(0)}
-            </div>
-            <span className="text-sm font-medium text-gray-700">
-              {task.assignee}
+        {/* PROGRESS */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-sm mb-1">
+            <span className="text-gray-600">Completion</span>
+            <span className="font-semibold text-blue-600">
+              {Math.round(task.percent_completion)}%
             </span>
           </div>
-          <div className="text-sm text-gray-500">{task.estimatedTime}</div>
+
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-blue-500 to-indigo-500"
+              style={{ width: `${task.percent_completion}%` }}
+            />
+          </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity pt-3 border-t border-gray-100">
+        {/* FOOTER */}
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <div className="flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            <span>
+              Created {new Date(task.created_at).toLocaleDateString()}
+            </span>
+          </div>
+
+          <ChevronRight className="w-4 h-4 text-blue-500" />
+        </div>
+
+        {/* ACTIONS */}
+        <div
+          className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity pt-3 border-t border-gray-100 mt-4"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Button variant="outline" size="sm" className="flex-1">
             <Edit className="w-4 h-4 mr-2" />
             Edit
@@ -131,16 +115,10 @@ export function TaskCard({ task }) {
           <Button
             variant="outline"
             size="sm"
-            className="text-blue-600 hover:bg-blue-50"
+            className="flex-1 text-red-600 hover:bg-red-50"
           >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-red-600 hover:bg-red-50"
-          >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete
           </Button>
         </div>
       </div>
