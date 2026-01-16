@@ -4,7 +4,7 @@ from my_agent.schemas.evalaution_schema import EvaluatorOutput
 from my_agent.schemas.routine import RoutineLLMOutput
 from my_agent.schemas.diet import DietPlan
 from my_agent.schemas.fitness import FitnessPlan
-
+from my_agent.schemas.activity import ActivityCreateList
 from langchain_groq import ChatGroq
 from langchain_core.tools import tool
 from dotenv import load_dotenv
@@ -87,4 +87,9 @@ structured_fitness_planer_llm = (
     fitness_planner_llm
     .bind_tools([json])
     .with_structured_output(FitnessPlan)
+)
+
+activity_structured_llm = (
+    base_llm.bind_tools([json])
+    .with_structured_output(ActivityCreateList)
 )
