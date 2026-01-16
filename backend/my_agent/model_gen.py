@@ -132,7 +132,7 @@ graph.add_conditional_edges(
         "approved": "proposal_builder"
     }
 )
-
+graph.add_edge('task_optimiser_node','task_evaluator_node')
 chatbot = graph.compile(
     checkpointer=checkpointer
 )
