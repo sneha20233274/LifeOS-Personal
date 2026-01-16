@@ -10,23 +10,21 @@ import Sidebar from "./components/Sidebar";
 import { ProposalsPage } from "./components/ProposalsPage";
 import ChatInterface from "./components/ChatInterface";
 import SessionPage from "./components/SessionPage";
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { loadFromStorage } from "./store/authSlice";
- 
-export default function App() {
-   const dispatch = useDispatch();
 
-   useEffect(() => {
-     const data = localStorage.getItem("auth");
-     if (data) {
-       dispatch(loadFromStorage(JSON.parse(data)));
-     }
-   }, []);
+export default function App() {
+  
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
       <Route path="/login" element={<LoginPage />} />
+
+      <Route path="/goals" element={<GoalsPage />} />
+
+      {/* SAME PAGE – DIFFERENT CONTEXT */}
+      <Route path="/tasks" element={<TasksPage />} />
+      <Route path="/goals/:goalId/tasks" element={<TasksPage />} />
+
+      <Route path="/tasks/:taskId/subtasks" element={<SubtasksPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/goals" element={<GoalsPage />} />

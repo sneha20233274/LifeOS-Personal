@@ -28,7 +28,7 @@ def get_subtask(db: Session, subtask_id: int) -> Subtask | None:
     )
 
 
-def get_subtasks_by_task(db: Session, task_id: int):
+def get_subtasks_by_task(db: Session,user_id:int, task_id: int):
     return (
         db.query(Subtask)
         .filter(Subtask.task_id == task_id)

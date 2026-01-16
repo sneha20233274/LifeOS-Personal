@@ -16,6 +16,14 @@ def create_task(db: Session, payload: TaskCreate, user_id: int) -> Task:
     return task
 
 
+def get_tasks_by_user(db: Session, user_id: int):
+    return (
+        db.query(Task)
+        .filter(Task.user_id == user_id)
+        .order_by(Task.created_at.desc())
+        .all()
+    )
+
 def get_task(db: Session, task_id: int) -> Task | None:
     return (
         db.query(Task)
@@ -24,7 +32,7 @@ def get_task(db: Session, task_id: int) -> Task | None:
     )
 
 
-def get_tasks_by_goal(db: Session, goal_id: int):
+def get_tasks_by_goal(db: Session,user_id: int, goal_id: int):
     return (
         db.query(Task)
         .filter(Task.goal_id == goal_id)

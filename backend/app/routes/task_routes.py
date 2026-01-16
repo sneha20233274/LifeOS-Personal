@@ -2,7 +2,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status,Request
 from sqlalchemy.orm import Session
-
+from typing import List
+from app.core.security import get_current_user
 from app.core.database import get_db
 from app.schemas.task import TaskCreate, TaskUpdate, TaskOut
 from app.crud.task_crud import (
@@ -10,15 +11,18 @@ from app.crud.task_crud import (
     get_task,
     get_tasks_by_goal,
     update_task_fields,
-    delete_task
+    delete_task,
+    get_tasks_by_user
+  
 )
-from app.utils.oauth2_scheme  import swagger_bearer_auth
+
+
 
 
 router = APIRouter(
    
     tags=["Tasks"],
-    dependencies=[Depends(swagger_bearer_auth)]
+  
 )
 
 
@@ -44,6 +48,33 @@ def create_task_route(
 
 
 
+
+
+
+# ✅ ALL TASKS OF USER
+@router.get("", response_model=List[TaskOut])
+def get_tasks(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_id = current_user.user_id
+    return get_tasks_by_user(db=db, user_id=user_id)
+
+
+# ✅ TASKS FOR A PARTICULAR GOAL
+@router.get("/by-goal/{goal_id}", response_model=List[TaskOut])
+def get_tasks_for_goal(
+    goal_id: int,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_id = current_user.user_id
+    return get_tasks_by_goal(
+        db=db,
+        user_id=user_id,
+        goal_id=goal_id,
+    )
+
 @router.get("/{task_id}", response_model=TaskOut)
 def get_task_route(task_id: int, db: Session = Depends(get_db)):
     task = get_task(db, task_id)
@@ -52,9 +83,6 @@ def get_task_route(task_id: int, db: Session = Depends(get_db)):
     return task
 
 
-@router.get("/goal/{goal_id}", response_model=list[TaskOut])
-def get_tasks_for_goal(goal_id: int, db: Session = Depends(get_db)):
-    return get_tasks_by_goal(db, goal_id)
 
 
 @router.patch("/{task_id}", response_model=TaskOut)

@@ -1,37 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, Plus, Search, Filter, ListTodo } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { SubtaskCard } from "./SubtaskCard";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { useGetSubtasksByTaskQuery } from "../services/subtasksApi";
+
 export function SubtasksPage() {
   const navigate = useNavigate();
   const { taskId } = useParams();
 
-  const [subtasks, setSubtasks] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  /* -----------------------------
-     FETCH SUBTASKS FROM BACKEND
-  ------------------------------ */
-  useEffect(() => {
-    const fetchSubtasks = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/subtasks?task_id=${taskId}`);
-        const data = await res.json();
-        setSubtasks(data);
-      } catch (err) {
-        console.error("Failed to fetch subtasks", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSubtasks();
-  }, [taskId]);
+  // 🔹 RTK QUERY
+  const {
+    data: subtasks = [],
+    isLoading,
+    isError,
+    error,
+  } = useGetSubtasksByTaskQuery(taskId);
 
   /* -----------------------------
      SEARCH FILTER
@@ -71,7 +59,6 @@ export function SubtasksPage() {
               </div>
             </div>
 
-            {/* New Subtask (kept for later modal wiring) */}
             <Button className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700">
               <Plus className="w-5 h-5 mr-2" />
               New Subtask
@@ -100,9 +87,14 @@ export function SubtasksPage() {
 
       {/* SUBTASKS GRID */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center items-center py-20">
-            <div className="w-12 h-12 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin" />
+          </div>
+        ) : isError ? (
+          <div className="text-center py-20 text-red-600">
+            Failed to load subtasks
+            <pre className="text-xs mt-2">{JSON.stringify(error, null, 2)}</pre>
           </div>
         ) : filteredSubtasks.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

@@ -1,42 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, Search, Filter, Target } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { GoalCard } from "./GoalCard";
 import { useNavigate } from "react-router-dom";
 
+import { useGetGoalsQuery } from "../services/goalsApi";
+
 export function GoalsPage() {
-  const [goals, setGoals] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  /* -----------------------------
-     FETCH GOALS FROM BACKEND
-  ------------------------------ */
-  useEffect(() => {
-    const fetchGoals = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/goals");
-        const data = await res.json();
-        setGoals(data);
-      } catch (err) {
-        console.error("Failed to fetch goals", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGoals();
-  }, []);
+  // 🔹 RTK QUERY
+  const { data: goals = [], isLoading, isError, error } = useGetGoalsQuery();
 
   /* -----------------------------
      SEARCH FILTER
   ------------------------------ */
   const filteredGoals = goals.filter(
     (goal) =>
-      goal.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      goal.goal_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       goal.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -70,8 +53,6 @@ export function GoalsPage() {
                 </div>
               </div>
             </div>
-
-            {/* ❌ Create Goal button REMOVED */}
           </div>
 
           {/* SEARCH */}
@@ -96,14 +77,19 @@ export function GoalsPage() {
 
       {/* GOALS GRID */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center items-center py-20">
-            <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+            <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+          </div>
+        ) : isError ? (
+          <div className="text-center py-20 text-red-600">
+            Failed to load goals
+            <pre className="text-xs mt-2">{JSON.stringify(error, null, 2)}</pre>
           </div>
         ) : filteredGoals.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredGoals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} />
+              <GoalCard key={goal.goal_id} goal={goal} />
             ))}
           </div>
         ) : (

@@ -1,39 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, Plus, Search, Filter, CheckSquare } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { TaskCard } from "./TaskCard";
 import { useNavigate, useParams } from "react-router-dom";
 
+import {
+  useGetTasksQuery,
+  useGetTasksByGoalQuery,
+} from "../services/tasksApi";
+
 export function TasksPage() {
   const navigate = useNavigate();
   const { goalId } = useParams();
 
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  /* -----------------------------
-     FETCH TASKS (ALL or GOAL)
-  ------------------------------ */
-  useEffect(() => {
-    const fetchTasks = async () => {
-      setLoading(true);
-      try {
-        const url = goalId ? `/api/tasks?goal_id=${goalId}` : `/api/tasks`;
-
-        const res = await fetch(url);
-        const data = await res.json();
-        setTasks(data);
-      } catch (err) {
-        console.error("Failed to fetch tasks", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, [goalId]);
+  // 🔹 RTK QUERY (goal-aware)
+  const {
+    data: tasks = [],
+    isLoading,
+    isError,
+    error,
+  } = goalId ? useGetTasksByGoalQuery(goalId) : useGetTasksQuery();
 
   /* -----------------------------
      SEARCH FILTER
@@ -75,7 +64,6 @@ export function TasksPage() {
               </div>
             </div>
 
-            {/* New Task (goal-aware later) */}
             <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
               <Plus className="w-5 h-5 mr-2" />
               New Task
@@ -104,9 +92,14 @@ export function TasksPage() {
 
       {/* TASKS GRID */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-20">
             <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+          </div>
+        ) : isError ? (
+          <div className="text-center py-20 text-red-600">
+            Failed to load tasks
+            <pre className="text-xs mt-2">{JSON.stringify(error, null, 2)}</pre>
           </div>
         ) : filteredTasks.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

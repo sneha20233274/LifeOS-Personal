@@ -7,6 +7,9 @@ import authReducer, { loadFromStorage } from "../store/authSlice";
 import { authApi } from "../services/authApi";
 import { proposalsApi } from "../services/proposalsApi";
 import { chatApi } from "../services/chatApi";
+import { goalsApi } from "../services/goalsApi";
+import { tasksApi } from "../services/tasksApi";
+import { subtasksApi } from "../services/subtasksApi";
 
 export const store = configureStore({
   reducer: {
@@ -17,13 +20,19 @@ export const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [proposalsApi.reducerPath]: proposalsApi.reducer,
     [chatApi.reducerPath]: chatApi.reducer,
+    [goalsApi.reducerPath]: goalsApi.reducer,
+    [tasksApi.reducerPath]: tasksApi.reducer,
+    [subtasksApi.reducerPath]: subtasksApi.reducer
   },
 
   middleware: (defaultMiddleware) =>
     defaultMiddleware().concat(
       authApi.middleware,
       proposalsApi.middleware,
-      chatApi.middleware
+      chatApi.middleware,
+       goalsApi.middleware,
+      tasksApi.middleware,
+      subtasksApi.middleware
     ),
 });
 

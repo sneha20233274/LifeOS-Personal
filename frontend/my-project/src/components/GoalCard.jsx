@@ -26,7 +26,6 @@ export function GoalCard({ goal }) {
       onClick={() => navigate(`/goals/${goal.goal_id}/tasks`)}
       className="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group cursor-pointer"
     >
-      {/* Gradient Header */}
       <div className="h-2 bg-gradient-to-r from-purple-500 via-purple-600 to-indigo-600" />
 
       {/* Hover Overlay */}
@@ -40,16 +39,15 @@ export function GoalCard({ goal }) {
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-6 relative z-0">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-3 flex-1">
             <div className="p-3 bg-purple-100 rounded-xl">
               <Target className="w-6 h-6 text-purple-600" />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
+              <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600">
                 {goal.goal_name}
               </h3>
 
@@ -64,14 +62,14 @@ export function GoalCard({ goal }) {
           <Button
             variant="ghost"
             size="icon"
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={(e) => e.stopPropagation()}
+            className="opacity-0 group-hover:opacity-100"
           >
             <MoreVertical className="w-5 h-5" />
           </Button>
         </div>
 
-        {/* Importance */}
+        {/* IMPORTANCE */}
         {goal.importance_level && (
           <div className="flex items-center gap-2 mb-4">
             <Star className="w-4 h-4 text-yellow-500" />
@@ -82,7 +80,7 @@ export function GoalCard({ goal }) {
           </div>
         )}
 
-        {/* Progress */}
+        {/* PROGRESS */}
         {typeof goal.percent_completion === "number" && (
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
@@ -97,26 +95,7 @@ export function GoalCard({ goal }) {
           </div>
         )}
 
-        {/* Motivations */}
-        {Array.isArray(goal.motivations) && goal.motivations.length > 0 && (
-          <div className="mb-4">
-            <div className="text-sm font-medium text-gray-700 mb-2">
-              Motivations
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {goal.motivations.map((m, idx) => (
-                <span
-                  key={idx}
-                  className="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-700"
-                >
-                  {m}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Target Date */}
+        {/* TARGET DATE */}
         {goal.target_date && (
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
             <Calendar className="w-4 h-4" />
@@ -124,7 +103,7 @@ export function GoalCard({ goal }) {
           </div>
         )}
 
-        {/* Actions */}
+        {/* ACTIONS */}
         <div
           className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
           onClick={(e) => e.stopPropagation()}
@@ -136,7 +115,7 @@ export function GoalCard({ goal }) {
           <Button
             variant="outline"
             size="sm"
-            className="flex-1 text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="flex-1 text-red-600 hover:bg-red-50"
           >
             <Trash2 className="w-4 h-4 mr-2" />
             Delete

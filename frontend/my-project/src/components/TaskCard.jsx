@@ -29,7 +29,10 @@ export function TaskCard({ task }) {
         {/* HEADER */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-start gap-3 flex-1">
-            <Checkbox checked={task.achieved} />
+            <Checkbox
+              checked={task.achieved}
+              onClick={(e) => e.stopPropagation()}
+            />
 
             <div className="flex-1">
               <h3
@@ -96,7 +99,10 @@ export function TaskCard({ task }) {
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
             <span>
-              Created {new Date(task.created_at).toLocaleDateString()}
+              Created{" "}
+              {task.created_at
+                ? new Date(task.created_at).toLocaleDateString()
+                : "—"}
             </span>
           </div>
 
@@ -112,6 +118,7 @@ export function TaskCard({ task }) {
             <Edit className="w-4 h-4 mr-2" />
             Edit
           </Button>
+
           <Button
             variant="outline"
             size="sm"

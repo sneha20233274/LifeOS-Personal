@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status,Request
 from sqlalchemy.orm import Session
-
+from typing import List
 from app.core.database import get_db
 from app.schemas.subtask import (
     SubtaskCreate,
@@ -16,13 +16,14 @@ from app.crud.subtask_crud import (
     update_subtask_fields,
     delete_subtask
 )
-from app.utils.oauth2_scheme  import swagger_bearer_auth
+from app.core.security import get_current_user
+
 
 
 router = APIRouter(
    
-    tags=["Subtasks"],
-    dependencies=[Depends(swagger_bearer_auth)]
+    tags=["Subtasks"]
+   
 )
 
 @router.post(
@@ -61,13 +62,18 @@ def get_subtask_route(
     return subtask
 
 
-@router.get("/task/{task_id}", response_model=list[SubtaskOut])
-def get_subtasks_for_task(
+@router.get("/by-task/{task_id}", response_model=List[SubtaskOut])
+def get_subtasks(
     task_id: int,
-    db: Session = Depends(get_db)
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    return get_subtasks_by_task(db, task_id)
-
+    user_id = current_user.user_id
+    return get_subtasks_by_task(
+        db=db,
+        user_id=user_id,
+        task_id=task_id,
+    )
 
 @router.patch("/{subtask_id}", response_model=SubtaskOut)
 def update_subtask_route(
