@@ -2,11 +2,11 @@ import { configureStore } from "@reduxjs/toolkit";
 
 import chatReducer from "../store/chatSlice";
 import appReducer from "../store/appSlice";
-import authReducer from "../store/authSlice";
+import authReducer, { loadFromStorage } from "../store/authSlice";
 
 import { authApi } from "../services/authApi";
 import { proposalsApi } from "../services/proposalsApi";
-import { chatApi } from "../services/chatApi"; // 👈 NEW
+import { chatApi } from "../services/chatApi";
 
 export const store = configureStore({
   reducer: {
@@ -14,16 +14,37 @@ export const store = configureStore({
     app: appReducer,
     auth: authReducer,
 
-    // 🔑 RTK Query reducers
     [authApi.reducerPath]: authApi.reducer,
     [proposalsApi.reducerPath]: proposalsApi.reducer,
-    [chatApi.reducerPath]: chatApi.reducer, // 👈 NEW
+    [chatApi.reducerPath]: chatApi.reducer,
   },
 
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(
+  middleware: (defaultMiddleware) =>
+    defaultMiddleware().concat(
       authApi.middleware,
       proposalsApi.middleware,
-      chatApi.middleware // 👈 NEW
+      chatApi.middleware
     ),
 });
+
+/* --------------------------------
+   APP INITIALISATION (AUTH) ✅
+---------------------------------- */
+
+let initialized = false;
+
+const initialiseApp = () => {
+  if (initialized) return;
+  initialized = true;
+
+  const auth = localStorage.getItem("auth");
+  if (!auth) return;
+
+  // 1️⃣ Hydrate Redux instantly (UI correct)
+  store.dispatch(loadFromStorage(JSON.parse(auth)));
+
+  // 2️⃣ Validate token in background (NO logout here)
+  store.dispatch(authApi.endpoints.loadUser.initiate());
+};
+
+initialiseApp();

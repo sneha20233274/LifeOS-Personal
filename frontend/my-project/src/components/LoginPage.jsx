@@ -5,7 +5,8 @@ import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
 import { useLoginMutation } from "../services/authApi";
 import { useDispatch } from "react-redux";
-import { setUser } from "../store/authSlice";
+import { setCredentials } from "../store/authSlice"; 
+
 import { useNavigate } from "react-router-dom";
 export function LoginPage() {
   const dispatch = useDispatch();
@@ -19,14 +20,25 @@ export function LoginPage() {
     e.preventDefault();
 
     try {
-      // const res = await login({ email, password }).unwrap();
+      const res = await login({
+        email_id: email,
+        password,
+      }).unwrap();
 
-     dispatch(setUser({ email }));
+      dispatch(
+        setCredentials({
+          user: email,
+          access: res.access_token,
+          refresh: res.refresh_token,
+        })
+      );
+
       navigate("/");
     } catch (err) {
-      alert(err?.data?.message || "Login failed");
+      alert("Login failed");
     }
   };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-pink-50 flex items-center justify-center p-6">
       <div className="w-full max-w-md">

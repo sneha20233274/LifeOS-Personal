@@ -2,7 +2,7 @@ from sqlalchemy import (
     Column, Integer, String, TIMESTAMP, text
 )
 from app.core.database import Base
-from backend.app.services.Executor import activity
+from app.services.Executor import activity
 
 # AgentRun represents one execution of your AI agent workflow.
 # Each time the user talks to the agent and a LangGraph run starts → one AgentRun row is created.
