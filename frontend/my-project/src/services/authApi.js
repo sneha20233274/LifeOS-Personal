@@ -1,21 +1,15 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { setCredentials } from "../store/authSlice";
+import { baseQuery } from "./baseQuery"; // ✅ shared baseQuery
 
 export const authApi = createApi({
   reducerPath: "authApi",
 
-  baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8000",
-    prepareHeaders: (headers) => {
-      const auth = JSON.parse(localStorage.getItem("auth"));
-      if (auth?.access) {
-        headers.set("Authorization", `Bearer ${auth.access}`);
-      }
-      return headers;
-    },
-  }),
+  // 🔥 THIS WAS MISSING
+  baseQuery: baseQuery,
 
   endpoints: (builder) => ({
+    /* ---------------- LOGIN ---------------- */
     login: builder.mutation({
       query: (body) => ({
         url: "/auth/login",
@@ -28,6 +22,7 @@ export const authApi = createApi({
       },
     }),
 
+    /* ---------------- SIGNUP ---------------- */
     signup: builder.mutation({
       query: (body) => ({
         url: "/auth/register",
@@ -36,6 +31,7 @@ export const authApi = createApi({
       }),
     }),
 
+    /* ---------------- LOAD USER ---------------- */
     loadUser: builder.query({
       query: () => ({
         url: "/auth/profile",
@@ -46,7 +42,6 @@ export const authApi = createApi({
         try {
           const { data } = await queryFulfilled;
 
-          // ✅ Update user only, keep tokens
           dispatch(
             setCredentials({
               user: data.user,
@@ -55,8 +50,7 @@ export const authApi = createApi({
             })
           );
         } catch {
-          // ❌ DO NOTHING HERE
-          // logout should happen ONLY on explicit 401 handling elsewhere
+          // do nothing – explicit logout elsewhere
         }
       },
     }),

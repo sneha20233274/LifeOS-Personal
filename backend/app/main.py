@@ -20,27 +20,28 @@ from my_agent.models.approval_decision import ApprovalDecision
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.middleware.auth import AuthMiddleware
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 # Create tables (for dev). Use Alembic for production migrations.
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Routine Planner Auth")
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # frontend
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.add_middleware(AuthMiddleware, protected = [
-  "/users","/goals","/activities","/tasks","/subtasks",
-  "/analytics","/proposals"
-])
+
 
 app.include_router(auth_routes.router, prefix="/auth")
 app.include_router(user_routes.router, prefix="/users")
