@@ -1,6 +1,5 @@
 from my_agent.chatstate import ChatState
-
-
+from app.utils.date_corruption_catch_helper import assert_deadline_type
 def proposal_builder_node(state: ChatState):
     proposals = []
 
@@ -34,6 +33,11 @@ def proposal_builder_node(state: ChatState):
 
             # ---- Subtask proposals ----
             for subtask in task.subtasks:
+                assert_deadline_type(
+                    subtask.deadline,
+                    context=f"proposal_builder_node → subtask {subtask.temp_subtask_key}"
+                )
+
                 proposals.append({
                     "action_type": "create_subtask",
                     "payload": {

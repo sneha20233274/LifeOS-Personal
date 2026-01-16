@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.services.Executor.base import BaseExecutor
 from my_agent.models.action_proposal import ActionProposal
 from app.models.subtask import Subtask, SubtaskType
-
+from app.utils.date_helper import coerce_date
 
 class CreateSubtaskExecutor(BaseExecutor):
     action_type = "create_subtask"
@@ -70,7 +70,7 @@ class CreateSubtaskExecutor(BaseExecutor):
             target_value=payload.get("target_value"),
             current_value=0.0,
             weight=payload.get("weight", 1),
-            deadline=payload.get("deadline"),
+            deadline= coerce_date(payload.get("deadline")),
         
             # NOTE: subtask→subtask dependencies are handled
             # by the rewire executor, not here
