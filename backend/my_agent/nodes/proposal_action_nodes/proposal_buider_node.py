@@ -33,10 +33,7 @@ def proposal_builder_node(state: ChatState):
 
             # ---- Subtask proposals ----
             for subtask in task.subtasks:
-                assert_deadline_type(
-                    subtask.deadline,
-                    context=f"proposal_builder_node → subtask {subtask.temp_subtask_key}"
-                )
+                
 
                 proposals.append({
                     "action_type": "create_subtask",
@@ -54,7 +51,20 @@ def proposal_builder_node(state: ChatState):
                         "temp_subtask_key": subtask.temp_subtask_key,
                     }
                 })
-
+    if state.get("activity_create"):
+        for activity in state["activity_create"]:
+            proposals.append({
+                "action_type": "log_activity",
+                "payload": {
+                    "activity_name": activity.activity_name,
+                    "activity_description": activity.activity_description,
+                    "start_ts": activity.start_ts,
+                    "end_ts": activity.end_ts,
+                    "duration_minutes": activity.duration_minutes,
+                    "summary_category": activity.summary_category,
+                    "criteria_ids": activity.criteria_ids,
+                }
+            })       
     # ---------------------------
     # 3️⃣ Fitness / Diet (unchanged)
     # ---------------------------

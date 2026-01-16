@@ -1,6 +1,9 @@
 from typing import Optional, TypedDict, Annotated, Dict, Any, List
 from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
+from my_agent.schemas.activity import ActivityCreate
+
+
 class ChatState(TypedDict, total=False):
     messages: Annotated[List[BaseMessage], add_messages]
 
@@ -17,9 +20,11 @@ class ChatState(TypedDict, total=False):
     proposals: List[Dict[str, Any]]   # pure data, no DB logic
     execution_result: Optional[Dict[str, Any]]
     
+    activity_create: List[ActivityCreate]
     feedback: str
     approved: bool
 
+   
     # loop / control info
     iteration: int
     max_iterations: int

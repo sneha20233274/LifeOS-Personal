@@ -26,8 +26,7 @@ from my_agent.nodes.create_task_subtask.task_creator_node import task_creator_no
 from my_agent.nodes.create_task_subtask.task_creator_optimisor_node import task_optimiser_node
 from my_agent.nodes.create_task_subtask.task_creator_evaluator_node import task_evaluator_node
 
-
-
+from my_agent.nodes.activity.activity_create_node import activity_create_node
 
 def conditional_decision(state: ChatState):
     if state['approved'] == False and state['iteration'] < state['max_iterations']:
@@ -62,7 +61,8 @@ graph.add_node("post_execution_reflect", post_execution_reflect_node)
 graph.add_node('task_creator_node', task_creator_node)
 graph.add_node('task_optimiser_node', task_optimiser_node)
 graph.add_node('task_evaluator_node', task_evaluator_node)
-
+#activity
+graph.add_node('activity_create_node',activity_create_node)
 
 
 graph.add_edge(START , 'intent_resolver')
@@ -72,6 +72,7 @@ graph.add_conditional_edges('intent_resolver', conditonal_intent_resolver,
   'diet': 'diet_planer',
   'goal': 'goal_prompt_builder_node',
   'task': 'task_creator_node',
+  'activity_create': 'activity_create_node'
 })
 graph.add_edge('goal_prompt_builder_node', 'routine_generator_node')
 graph.add_edge('routine_generator_node', 'goal_evaluator_node')
@@ -133,6 +134,9 @@ graph.add_conditional_edges(
     }
 )
 graph.add_edge('task_optimiser_node','task_evaluator_node')
+
+graph.add_edge('activity_create_node','proposal_builder')
+
 chatbot = graph.compile(
     checkpointer=checkpointer
 )
