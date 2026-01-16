@@ -67,3 +67,7 @@ LifeOs multiagent planner graph.
 
 <img width="2543" height="1292" alt="image" src="https://github.com/user-attachments/assets/a788c8e6-87e3-4015-bb9e-50c4741859e2" />
 frontend Ui for planner chatbot
+
+
+<img width="1365" height="925" alt="output_2" src="https://github.com/user-attachments/assets/7738e17e-7572-40a3-90e0-e94d222b21a9" />
+
