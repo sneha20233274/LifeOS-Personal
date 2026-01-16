@@ -5,7 +5,6 @@ import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
 import { useSignupMutation } from "../services/authApi";
 import { useDispatch } from "react-redux";
-import { setUser } from "../store/authSlice";
 import { useNavigate } from "react-router-dom";
 
 export function SignupPage() {
@@ -19,23 +18,24 @@ export function SignupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+   e.preventDefault();
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
+   if (password !== confirmPassword) return alert("Passwords mismatch");
 
-    try {
-      // const res = await signup({ name, email, password }).unwrap();
-      dispatch(setUser({ name, email }));
-// save globally
-      navigate("/");
-    } catch (err) {
-      alert(err?.data?.message || "Signup failed");
-    }
-  };
+   try {
+     await signup({
+       username: name,
+       email_id: email,
+       password,
+     }).unwrap();
+
+     navigate("/login");
+   } catch (err) {
+     alert("Signup failed");
+   }
+ };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">

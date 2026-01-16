@@ -8,6 +8,10 @@ class UserCreate(BaseModel):
     email_id: EmailStr
     password: str
     timezone: Optional[str] = "UTC"
+    
+class UserLogin(BaseModel):
+    email_id: str
+    password: str
 
 class UserUpdate(BaseModel):
     username: Optional[str]

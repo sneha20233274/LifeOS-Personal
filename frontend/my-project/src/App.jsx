@@ -10,8 +10,19 @@ import Sidebar from "./components/Sidebar";
 import { ProposalsPage } from "./components/ProposalsPage";
 import ChatInterface from "./components/ChatInterface";
 import SessionPage from "./components/SessionPage";
-
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { loadFromStorage } from "./store/authSlice";
+ 
 export default function App() {
+   const dispatch = useDispatch();
+
+   useEffect(() => {
+     const data = localStorage.getItem("auth");
+     if (data) {
+       dispatch(loadFromStorage(JSON.parse(data)));
+     }
+   }, []);
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />

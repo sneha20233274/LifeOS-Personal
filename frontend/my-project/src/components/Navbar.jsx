@@ -1,11 +1,14 @@
-import { User, CheckCircle2, Circle } from "lucide-react";
+import { User, CheckCircle2, Circle, LogOut } from "lucide-react";
 import { Button } from "./ui/Button";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { logout } from "../store/authSlice";
 
 export function Navbar({ isRoutineCompleted }) {
-  const { isLoggedIn } = useSelector((s) => s.auth);
+  const { isAuthenticated } = useSelector((s) => s.auth);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
   return (
     <nav
       className={`w-full px-6 py-4 transition-colors duration-300 ${
@@ -15,11 +18,11 @@ export function Navbar({ isRoutineCompleted }) {
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo/Brand */}
+        {/* Logo */}
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-white">Life OS</h1>
-          {/* Daily Routine Indicator */}
-          <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full">
+
+          <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
             {isRoutineCompleted ? (
               <CheckCircle2 className="w-5 h-5 text-white" />
             ) : (
@@ -31,14 +34,14 @@ export function Navbar({ isRoutineCompleted }) {
           </div>
         </div>
 
-        {/* Right Side - Auth Buttons & Profile */}
-        <div className="flex items-center gap-4">
-          {!isLoggedIn ? (
-            <div className="flex items-center gap-2">
+        {/* Right side */}
+        <div className="flex items-center gap-3">
+          {!isAuthenticated ? (
+            <>
               <Button
                 onClick={() => navigate("/login")}
                 variant="ghost"
-                className="text-white hover:bg-white/20 hover:text-white"
+                className="text-white hover:bg-white/20"
               >
                 Login
               </Button>
@@ -48,9 +51,10 @@ export function Navbar({ isRoutineCompleted }) {
               >
                 Sign Up
               </Button>
-            </div>
+            </>
           ) : (
-            <div className="flex items-center gap-3">
+            <>
+              {/* Profile icon */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -58,7 +62,20 @@ export function Navbar({ isRoutineCompleted }) {
               >
                 <User className="w-5 h-5" />
               </Button>
-            </div>
+
+              {/* Logout button */}
+              <Button
+                onClick={() => {
+                  dispatch(logout());
+                  navigate("/");
+                }}
+                variant="ghost"
+                className="flex items-center gap-2 text-white hover:bg-white/20"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </Button>
+            </>
           )}
         </div>
       </div>

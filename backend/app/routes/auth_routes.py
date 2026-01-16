@@ -4,12 +4,13 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from jose import JWTError
 from app.dependencies.db import get_db
-from app.schemas.user import UserCreate, UserOut
+from app.schemas.user import UserCreate, UserOut,UserLogin
 from app.schemas.token import TokenOut, TokenRefresh
 from app.crud.user_crud import create_user, get_user_by_email, save_refresh_token, revoke_refresh_token, is_refresh_token_revoked, get_user
-from app.core.security import verify_password, create_access_token, create_refresh_token, decode_token
+from app.core.security import verify_password, create_access_token, create_refresh_token, decode_token,get_current_user
 from app.models.refresh_token import RefreshToken
 from app.models.user import User
+
 
 router = APIRouter(tags=["auth"])
 
@@ -22,7 +23,7 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     return user
 
 @router.post("/login", response_model=TokenOut)
-def login(payload: UserCreate, db: Session = Depends(get_db)):
+def login(payload: UserLogin, db: Session = Depends(get_db)):
     # Using same schema as UserCreate for simple login (email + password)
     user = get_user_by_email(db, payload.email_id)
     if not user or not verify_password(payload.password, user.password_hash):
@@ -89,3 +90,13 @@ def logout(payload: TokenRefresh, db: Session = Depends(get_db)):
         # If token doesn't exist we still return 204 but could log it
         return {"msg": "ok"}
     return {"msg": "logged_out"}
+
+@router.get("/profile")
+def get_profile(current_user: User = Depends(get_current_user)):
+   return {
+    "user": {
+        "user_id": current_user.user_id,
+        "email": current_user.email_id,
+    }
+}
+

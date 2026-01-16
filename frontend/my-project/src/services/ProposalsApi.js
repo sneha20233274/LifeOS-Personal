@@ -1,23 +1,17 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+// services/proposalsApi.js
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQuery } from "./baseQuery"; // ✅ shared baseQuery
 
 export const proposalsApi = createApi({
   reducerPath: "proposalsApi",
 
-  baseQuery: fetchBaseQuery({
-    baseUrl: "http://127.0.0.1:8000", // adjust if needed
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token;
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  // 🔥 THIS IS THE FIX
+  baseQuery: baseQuery,
 
   tagTypes: ["Proposals"],
 
   endpoints: (builder) => ({
-    // 🔹 GET proposals after interrupt
+    // 🔹 GET proposals
     getProposals: builder.query({
       query: () => ({
         url: "/chat/proposals",
@@ -26,7 +20,7 @@ export const proposalsApi = createApi({
       providesTags: ["Proposals"],
     }),
 
-    // 🔹 SUBMIT final proposal state (approve/reject/update)
+    // 🔹 SUBMIT proposals
     submitProposals: builder.mutation({
       query: ({ thread_id, proposals }) => ({
         url: "/chat/resume",
@@ -41,7 +35,6 @@ export const proposalsApi = createApi({
   }),
 });
 
-// 🔥 Auto-generated hooks
 export const {
   useGetProposalsQuery,
   useSubmitProposalsMutation,

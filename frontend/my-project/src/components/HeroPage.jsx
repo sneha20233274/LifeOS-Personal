@@ -4,13 +4,20 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-export function HeroPage({ onGetStarted }) {
+export function HeroPage() {
   const navigate = useNavigate();
-   const { isLoggedIn } = useSelector((s) => s.auth);
-   const handleGetStarted = () => {
-       if (isLoggedIn) navigate("/dashboard");
-       else navigate("/signup");
-    };
+
+  // ✅ CORRECT FLAG
+  const { isAuthenticated } = useSelector((s) => s.auth);
+
+  const handleGetStarted = () => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    } else {
+      navigate("/login"); // or /signup if you prefer
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-sky-50 via-teal-50 to-emerald-100">
       {/* Hero Section */}
@@ -38,10 +45,14 @@ export function HeroPage({ onGetStarted }) {
             </p>
 
             <div className="flex gap-4">
-              <Button onClick={handleGetStarted}
-                size="lg" className="bg-gradient-to-r from-teal-600
-                to-emerald-600 hover:from-teal-700 hover:to-emerald-700
-                text-white px-8" > Get Started
+              <Button
+                onClick={handleGetStarted}
+                size="lg"
+                className="bg-gradient-to-r from-teal-600 to-emerald-600
+                hover:from-teal-700 hover:to-emerald-700
+                text-white px-8"
+              >
+                Get Started
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
 
@@ -86,7 +97,6 @@ export function HeroPage({ onGetStarted }) {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Feature 1 */}
           <FeatureCard
             icon={<Calendar className="w-6 h-6 text-teal-600" />}
             bg="bg-teal-100"
@@ -94,7 +104,6 @@ export function HeroPage({ onGetStarted }) {
             desc="AI powered scheduling that adapts to your lifestyle."
           />
 
-          {/* Feature 2 */}
           <FeatureCard
             icon={<Target className="w-6 h-6 text-sky-600" />}
             bg="bg-sky-100"
@@ -102,7 +111,6 @@ export function HeroPage({ onGetStarted }) {
             desc="Track progress with powerful goal analytics."
           />
 
-          {/* Feature 3 */}
           <FeatureCard
             icon={<Brain className="w-6 h-6 text-emerald-600" />}
             bg="bg-emerald-100"
@@ -115,7 +123,7 @@ export function HeroPage({ onGetStarted }) {
   );
 }
 
-/* Small helper components */
+/* Helper components */
 function FeatureCard({ icon, bg, title, desc }) {
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
