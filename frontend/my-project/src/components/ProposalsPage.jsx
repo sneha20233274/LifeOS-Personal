@@ -3,8 +3,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { Toaster, toast } from "sonner";
-
 import { GoalProposal } from "./GoalProposal";
+
+import { TaskProposal } from "./TaskProposal";
 import { useSubmitProposalsMutation } from "../services/proposalsApi";
 
 export function ProposalsPage() {
@@ -98,7 +99,6 @@ export function ProposalsPage() {
   ============================== */
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-
       {/* ANIMATED GRID BACKGROUND */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05),transparent_70%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
@@ -106,7 +106,6 @@ export function ProposalsPage() {
       <Toaster position="top-right" richColors />
 
       <div className="relative max-w-7xl mx-auto py-10 px-6">
-
         {/* HEADER */}
         <div className="mb-10 border border-white/10 rounded-2xl p-6 bg-white/5 backdrop-blur-xl shadow-[0_0_40px_rgba(255,255,255,0.05)]">
           <div className="flex items-center gap-4">
@@ -157,31 +156,41 @@ export function ProposalsPage() {
         {/* GOALS */}
         <div className="space-y-8">
           <AnimatePresence mode="popLayout">
-            {activeGoals.map((goal) => (
-              <GoalProposal
-                key={goal.id}
-                goal={goal}
-                allTasks={tasks}
-                allSubtasks={subtasks}
-                onUpdate={updateEntity}
-                onStatusChange={updateStatus}
-              />
-            ))}
+            {/* GOALS OR TASK-ONLY MODE */}
+            {activeGoals.length > 0 ? (
+              <div className="space-y-8">
+                <AnimatePresence mode="popLayout">
+                  {activeGoals.map((goal) => (
+                    <GoalProposal
+                      key={goal.proposal_id}
+                      goal={goal}
+                      allTasks={tasks}
+                      allSubtasks={subtasks}
+                      onUpdate={updateEntity}
+                      onStatusChange={updateStatus}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold tracking-wide">Tasks</h2>
+
+                {tasks.map((task) => (
+                  <TaskProposal
+                    key={task.proposal_id}
+                    task={task}
+                    allSubtasks={subtasks}
+                    onUpdate={updateEntity}
+                    onStatusChange={updateStatus}
+                  />
+                ))}
+              </div>
+            )}
           </AnimatePresence>
         </div>
 
-        {/* EMPTY */}
-        {activeGoals.length === 0 && (
-          <div className="mt-16 text-center border border-white/10 rounded-2xl p-12 bg-white/5 backdrop-blur-xl">
-            <Sparkles className="w-20 h-20 mx-auto text-white/20 mb-6" />
-            <p className="text-gray-300 text-lg">
-              No pending neural objectives detected
-            </p>
-            <p className="text-gray-500 text-sm mt-2">
-              LLM plan pipeline is fully synchronized
-            </p>
-          </div>
-        )}
+     
 
         {/* SUBMIT */}
         <div className="mt-12 flex justify-end">
