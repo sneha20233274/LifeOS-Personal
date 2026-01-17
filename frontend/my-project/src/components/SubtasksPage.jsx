@@ -14,12 +14,15 @@ export function SubtasksPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   // 🔹 RTK QUERY
-  const {
-    data: subtasks = [],
-    isLoading,
-    isError,
-    error,
-  } = useGetSubtasksByTaskQuery(taskId);
+const {
+  data: subtasks = [],
+  isLoading,
+  isError,
+  error,
+} = useGetSubtasksByTaskQuery(taskId, {
+  refetchOnMountOrArgChange: true,
+});
+
 
   /* -----------------------------
      SEARCH FILTER
@@ -59,7 +62,10 @@ export function SubtasksPage() {
               </div>
             </div>
 
-            <Button className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700">
+            <Button
+              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700"
+              onClick={() => navigate(`/tasks/${taskId}/subtasks/new`)}
+            >
               <Plus className="w-5 h-5 mr-2" />
               New Subtask
             </Button>

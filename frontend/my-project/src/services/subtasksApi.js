@@ -6,10 +6,29 @@ export const subtasksApi = createApi({
   baseQuery,
 
   endpoints: (builder) => ({
+
+    /* -----------------------------
+       GET SUBTASKS BY TASK
+    ------------------------------ */
     getSubtasksByTask: builder.query({
       query: (taskId) => `/subtasks/by-task/${taskId}`,
     }),
+
+    /* -----------------------------
+       CREATE SUBTASK
+    ------------------------------ */
+    createSubtask: builder.mutation({
+      query: (payload) => ({
+        url: "/subtasks/",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
   }),
 });
 
-export const { useGetSubtasksByTaskQuery } = subtasksApi;
+export const {
+  useGetSubtasksByTaskQuery,
+  useCreateSubtaskMutation,
+} = subtasksApi;
