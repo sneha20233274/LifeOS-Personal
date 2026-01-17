@@ -5,10 +5,7 @@ import { Input } from "./ui/input";
 import { TaskCard } from "./TaskCard";
 import { useNavigate, useParams } from "react-router-dom";
 
-import {
-  useGetTasksQuery,
-  useGetTasksByGoalQuery,
-} from "../services/tasksApi";
+import { useGetTasksQuery, useGetTasksByGoalQuery } from "../services/tasksApi";
 
 export function TasksPage() {
   const navigate = useNavigate();
@@ -16,13 +13,33 @@ export function TasksPage() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // 🔹 RTK QUERY (goal-aware)
+  /* -----------------------------
+     RTK QUERIES (SAFE + GOAL AWARE)
+  ------------------------------ */
   const {
-    data: tasks = [],
-    isLoading,
-    isError,
-    error,
-  } = goalId ? useGetTasksByGoalQuery(goalId) : useGetTasksQuery();
+    data: tasksByGoal = [],
+    isLoading: isLoadingByGoal,
+    isError: isErrorByGoal,
+    error: errorByGoal,
+  } = useGetTasksByGoalQuery(goalId, {
+    skip: !goalId,
+    refetchOnMountOrArgChange: true,
+  });
+
+  const {
+    data: allTasks = [],
+    isLoading: isLoadingAll,
+    isError: isErrorAll,
+    error: errorAll,
+  } = useGetTasksQuery(undefined, {
+    skip: !!goalId,
+    refetchOnMountOrArgChange: true,
+  });
+
+  const tasks = goalId ? tasksByGoal : allTasks;
+  const isLoading = goalId ? isLoadingByGoal : isLoadingAll;
+  const isError = goalId ? isErrorByGoal : isErrorAll;
+  const error = goalId ? errorByGoal : errorAll;
 
   /* -----------------------------
      SEARCH FILTER
@@ -64,7 +81,15 @@ export function TasksPage() {
               </div>
             </div>
 
-            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+            {/* NEW TASK */}
+            <Button
+              onClick={() =>
+                goalId
+                  ? navigate(`/goals/${goalId}/tasks/new`)
+                  : navigate("/tasks/new")
+              }
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            >
               <Plus className="w-5 h-5 mr-2" />
               New Task
             </Button>

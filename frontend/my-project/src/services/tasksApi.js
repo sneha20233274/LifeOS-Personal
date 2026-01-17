@@ -6,19 +6,37 @@ export const tasksApi = createApi({
   baseQuery,
 
   endpoints: (builder) => ({
-    // 🔹 all tasks
+
+    /* -----------------------------
+       GET ALL TASKS
+    ------------------------------ */
     getTasks: builder.query({
       query: () => "/tasks",
     }),
 
-    // 🔹 tasks for a specific goal
+    /* -----------------------------
+       GET TASKS BY GOAL
+    ------------------------------ */
     getTasksByGoal: builder.query({
       query: (goalId) => `/tasks/by-goal/${goalId}`,
     }),
+
+    /* -----------------------------
+       CREATE TASK
+    ------------------------------ */
+    createTask: builder.mutation({
+      query: (payload) => ({
+        url: "/tasks/",
+        method: "POST",
+        body: payload,
+      }),
+    }),
+
   }),
 });
 
 export const {
   useGetTasksQuery,
   useGetTasksByGoalQuery,
+  useCreateTaskMutation,
 } = tasksApi;

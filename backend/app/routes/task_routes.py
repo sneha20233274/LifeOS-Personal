@@ -6,6 +6,7 @@ from typing import List
 from app.core.security import get_current_user
 from app.core.database import get_db
 from app.schemas.task import TaskCreate, TaskUpdate, TaskOut
+from app.models import User
 from app.crud.task_crud import (
     create_task,
     get_task,
@@ -14,6 +15,7 @@ from app.crud.task_crud import (
     delete_task,
     get_tasks_by_user
   
+
 )
 
 
@@ -26,26 +28,21 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=TaskOut,
+    status_code=status.HTTP_201_CREATED
+)
 def create_task_route(
     payload: TaskCreate,
-    request: Request,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    """
-    Create a task for the currently authenticated user.
-    User is extracted from request.state (set by auth middleware).
-    """
-
-    # ✅ extract user from request.state
-    current_user = request.state.user
-    if not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized"
-        )
-    return create_task(db, payload, int(current_user['sub']))
-
+    return create_task(
+        db=db,
+        payload=payload,
+        user_id=current_user.user_id
+    )
 
 
 

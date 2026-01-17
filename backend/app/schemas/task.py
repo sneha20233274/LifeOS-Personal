@@ -7,8 +7,8 @@ from pydantic import BaseModel
 class TaskCreate(BaseModel):
     task_name: str
     description: Optional[str] = None
-    goal_id: int
 
+    goal_id: Optional[int] = None
     difficulty: int = 1
     depends_on_task_id: Optional[int] = None
 

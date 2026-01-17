@@ -11,6 +11,7 @@ import { ProposalsPage } from "./components/ProposalsPage";
 import ChatInterface from "./components/ChatInterface";
 import SessionPage from "./components/SessionPage";
 import { CreateSubtask } from "./components/CreateSubtask";
+import { CreateTask } from "./components/CreateTask";
 
 export default function App() {
   
@@ -22,7 +23,10 @@ export default function App() {
       {/* SAME PAGE – DIFFERENT CONTEXT */}
       <Route path="/tasks" element={<TasksPage />} />
       <Route path="/goals/:goalId/tasks" element={<TasksPage />} />
-      <Route path="/tasks/:taskId/subtasks/new" element={<CreateSubtask />}/>
+      <Route path="/tasks/:taskId/subtasks/new" element={<CreateSubtask />} />
+      <Route path="/tasks/new" element={<CreateTask />} />
+      <Route path="/goals/:goalId/tasks/new" element={<CreateTask />} />
+
       <Route path="/tasks/:taskId/subtasks" element={<SubtasksPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
