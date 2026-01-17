@@ -14,9 +14,9 @@ class SummaryCategoryEnum(str, enum.Enum):
 
 
 #productive categories
-# productive_categories = {
-#     SummaryCategoryEnum.work,
-#     SummaryCategoryEnum.learning,
-#     SummaryCategoryEnum.exercise,
-#     SummaryCategoryEnum.admin,
-# }
+productive_categories = {
+    SummaryCategoryEnum.work,
+    SummaryCategoryEnum.learning,
+    SummaryCategoryEnum.exercise,
+    SummaryCategoryEnum.admin,
+}
