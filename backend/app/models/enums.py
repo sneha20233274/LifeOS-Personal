@@ -9,6 +9,7 @@ class SummaryCategoryEnum(str, enum.Enum):
     leisure = "leisure"
     sleep = "sleep"
     social = "social"
+    health = "health"
     commute = "commute"
     other = "other"
 

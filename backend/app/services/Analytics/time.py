@@ -21,7 +21,7 @@ def time_distribution(db, user_id, start, end):
         .group_by(Activity.summary_category)
         .all()
     )
-
+    
     return {r.summary_category.value: r.minutes for r in rows}
 
 
