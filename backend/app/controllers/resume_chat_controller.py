@@ -6,41 +6,49 @@ from my_agent.models.action_proposal import ProposalStatus, ActionProposal
 from app.services.Executor.dispatcher import execute_proposals
 
 
-def resume_chat_controller(request: dict, db: Session):
+def resume_chat_controller(
+    *,
+    request: dict,
+    db: Session,
+    user_id: int,
+):
     """
     Resume an interrupted agent run.
 
     Steps:
-    1. Update proposals in DB based on frontend edits
-    2. Execute ONLY incoming + approved proposals
-    3. Resume LangGraph
-    4. Return final messages
+    1. Validate thread ownership
+    2. Update proposals in DB based on frontend edits
+    3. Execute ONLY incoming + approved proposals
+    4. Resume LangGraph
+    5. Return final messages
     """
 
     # -------------------------------------------------
     # STEP 0: PARSE REQUEST
     # -------------------------------------------------
-    body = request
-    thread_id = body["thread_id"]
-    incoming_proposals = body["proposals"]
+    thread_id = request["thread_id"]
+    incoming_proposals = request["proposals"]
 
     # -------------------------------------------------
-    # STEP 1: LOAD ALL PROPOSALS FOR THREAD (ORM)
+    # STEP 1: LOAD & AUTHORIZE PROPOSALS
     # -------------------------------------------------
     db_proposals = (
         db.query(ActionProposal)
-        .filter(ActionProposal.thread_id == thread_id)
+        .filter(
+            ActionProposal.thread_id == thread_id,
+            ActionProposal.user_id == user_id,   # 🔐 authorization
+        )
         .all()
     )
 
-    # Map: proposal_id -> ORM object
+    if not db_proposals:
+        raise ValueError("Invalid thread_id or access denied")
+
     db_proposal_map = {p.proposal_id: p for p in db_proposals}
 
     # -------------------------------------------------
-    # STEP 2: UPDATE DB USING FRONTEND STATE
+    # STEP 2: APPLY FRONTEND UPDATES
     # -------------------------------------------------
-    print("\n=== APPLYING FRONTEND UPDATES ===")
-
     incoming_ids = set()
 
     for incoming in incoming_proposals:
@@ -49,47 +57,33 @@ def resume_chat_controller(request: dict, db: Session):
 
         proposal = db_proposal_map.get(proposal_id)
         if not proposal:
-            print(f"⚠️ Proposal {proposal_id} not found in DB")
             continue
-
-        print(
-            f"Updating proposal_id={proposal_id} | "
-            f"STATUS: {proposal.status} → {incoming['status']}"
-        )
 
         # Merge payload safely
         proposal.payload = {
             **(proposal.payload or {}),
-            **incoming.get("payload", {})
+            **incoming.get("payload", {}),
         }
 
-        # Update status (enum-safe)
-        proposal.status = ProposalStatus[incoming["status"].upper()]
+        # Enum-safe status update
+        proposal.status = ProposalStatus[incoming["status"]]
 
     db.commit()
 
-    # Refresh ORM objects to guarantee DB truth
-    for p in db_proposals:
-        db.refresh(p)
-
-    print("\n=== AFTER DB COMMIT ===")
-    for p in db_proposals:
-        print(
-            f"proposal_id={p.proposal_id}, "
-            f"status={p.status}, "
-            f"payload={p.payload}"
-        )
-
-    target_db_proposals = [
+    # -------------------------------------------------
+    # STEP 3: EXECUTE ONLY APPROVED + INCOMING
+    # -------------------------------------------------
+    executable_proposals = [
         p for p in db_proposals
-        if p.proposal_id in incoming_ids
+        if (
+            p.proposal_id in incoming_ids
+            and p.status == ProposalStatus.APPROVED
+        )
     ]
-
-   
 
     execution_result = execute_proposals(
         db=db,
-        proposals=target_db_proposals  # ✅ ORM OBJECTS ONLY
+        proposals=executable_proposals,
     )
 
     # -------------------------------------------------
@@ -105,7 +99,7 @@ def resume_chat_controller(request: dict, db: Session):
     )
 
     # -------------------------------------------------
-    # STEP 5: RETURN FINAL RESPONSE
+    # STEP 5: RESPONSE
     # -------------------------------------------------
     return {
         "status": "RESUMED",

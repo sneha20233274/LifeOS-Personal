@@ -34,9 +34,8 @@ def resume_chat_route(
     return resume_chat_controller(
         request=request,
         db=db,
-        user_id=current_user.user_id
+        user_id=current_user.user_id,
     )
-
 @router.post("/new")
 def new_chat_route(
     db: Session = Depends(get_db),

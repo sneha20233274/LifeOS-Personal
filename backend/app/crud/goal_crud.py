@@ -40,15 +40,11 @@ def get_goal(db: Session, goal_id: int) -> Optional[Goal]:
 def get_goals_by_user(
     db: Session,
     user_id: int,
-    skip: int = 0,
-    limit: int = 100
 ) -> List[Goal]:
     return (
         db.query(Goal)
         .filter(Goal.user_id == user_id)
         .order_by(Goal.created_at.desc())
-        .offset(skip)
-        .limit(limit)
         .all()
     )
 

@@ -158,7 +158,7 @@ export function GoalProposal({
             >
               <Trash2 />
             </button>
-            {goal.status === "REJECTED" && (
+            {(goal.status === "REJECTED" || goal.status==="APPROVED") &&  (
               <button
                 onClick={() => onStatusChange(goal.proposal_id, "PENDING")}
                 className="p-3 bg-gray-200 text-gray-700 rounded-xl"

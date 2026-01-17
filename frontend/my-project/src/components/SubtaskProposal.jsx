@@ -123,7 +123,7 @@ export function SubtaskProposal({ subtask, onUpdate, onStatusChange }) {
               <Trash2 />
             </button>
 
-            {status === "REJECTED" && (
+            {(status === "REJECTED" || status === "APPROVED") && (
               <button
                 onClick={() => onStatusChange("PENDING")}
                 className="p-1.5 bg-gray-200 text-gray-700 rounded-lg"

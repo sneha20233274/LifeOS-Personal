@@ -142,9 +142,9 @@ export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
               <Trash2 />
             </button>
 
-            {status === "REJECTED" && (
+            {(status === "REJECTED" || status === "APPROVED") && (
               <button
-                onClick={() => onStatusChange(task.proposal_idd, "PENDING")}
+                onClick={() => onStatusChange(task.proposal_id, "PENDING")}
                 className="p-2 bg-gray-200 text-gray-700 rounded-lg"
               >
                 <XCircle />
@@ -194,7 +194,10 @@ export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
                   key={subtask.id}
                   subtask={subtask}
                   onUpdate={(patch) => onUpdate(subtask.proposal_id, patch)}
-                 onStatusChange={(status) => onStatusChange(subtask.proposal_id, status)}></SubtaskProposal>
+                  onStatusChange={(status) =>
+                    onStatusChange(subtask.proposal_id, status)
+                  }
+                ></SubtaskProposal>
               ))}
             </AnimatePresence>
           </motion.div>

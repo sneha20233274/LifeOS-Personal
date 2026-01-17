@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
   
 from app.schemas.goal import GoalCreate, GoalUpdate, GoalOut
 from app.core.database import get_db
+from app.core.security import get_current_user
 
 from app.crud.goal_crud import (
     create_goal,
@@ -12,9 +13,14 @@ from app.crud.goal_crud import (
     update_goal,
     delete_goal,
 )
-from app.utils.oauth2_scheme  import swagger_bearer_auth
+from app.schemas.task import TaskCreate, TaskUpdate, TaskOut
 
-router = APIRouter(tags=["goals"], dependencies=[Depends(swagger_bearer_auth)])
+    
+  
+
+
+
+router = APIRouter(tags=["goals"])
 
 
 # -------------------------------------------------------------------
@@ -66,21 +72,13 @@ def api_create_goal(
 # -------------------------------------------------------------------
 # LIST ALL GOALS OF USER
 # -------------------------------------------------------------------
-@router.get("/", response_model=List[GoalOut])
-def api_list_goals(
-    request: Request,
+@router.get("", response_model=List[GoalOut])
+def get_goals(
+    current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
-    skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
 ):
-    user_id = int(request.state.user["sub"])
-    return get_goals_by_user(
-        db=db,
-        user_id=user_id,
-        skip=skip,
-        limit=limit,
-    )
-
+    user_id = current_user.user_id
+    return get_goals_by_user(db=db, user_id=user_id)
 
 # -------------------------------------------------------------------
 # GET SINGLE GOAL
@@ -100,6 +98,7 @@ def api_get_goal(
         raise HTTPException(status_code=403, detail="Not allowed")
 
     return goal
+
 
 
 # -------------------------------------------------------------------

@@ -2,7 +2,8 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status,Request
 from sqlalchemy.orm import Session
-
+from typing import List
+from app.models import User
 from app.core.database import get_db
 from app.schemas.subtask import (
     SubtaskCreate,
@@ -16,13 +17,14 @@ from app.crud.subtask_crud import (
     update_subtask_fields,
     delete_subtask
 )
-from app.utils.oauth2_scheme  import swagger_bearer_auth
+from app.core.security import get_current_user
+
 
 
 router = APIRouter(
    
-    tags=["Subtasks"],
-    dependencies=[Depends(swagger_bearer_auth)]
+    tags=["Subtasks"]
+   
 )
 
 @router.post(
@@ -32,23 +34,18 @@ router = APIRouter(
 )
 def create_subtask_route(
     payload: SubtaskCreate,
-    request: Request,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Create a subtask for the authenticated user.
-    User is read from request.state (set by auth middleware).
     """
 
-    # ✅ extract user from request.state
-    current_user = getattr(request.state, "user", None)
-    if not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unauthorized"
-        )
-
-    return create_subtask(db, payload, current_user["sub"])
+    return create_subtask(
+        db=db,
+        payload=payload,
+        user_id=current_user.user_id
+    )
 
 @router.get("/{subtask_id}", response_model=SubtaskOut)
 def get_subtask_route(
@@ -61,13 +58,18 @@ def get_subtask_route(
     return subtask
 
 
-@router.get("/task/{task_id}", response_model=list[SubtaskOut])
-def get_subtasks_for_task(
+@router.get("/by-task/{task_id}", response_model=List[SubtaskOut])
+def get_subtasks(
     task_id: int,
-    db: Session = Depends(get_db)
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    return get_subtasks_by_task(db, task_id)
-
+    user_id = current_user.user_id
+    return get_subtasks_by_task(
+        db=db,
+        user_id=user_id,
+        task_id=task_id,
+    )
 
 @router.patch("/{subtask_id}", response_model=SubtaskOut)
 def update_subtask_route(
