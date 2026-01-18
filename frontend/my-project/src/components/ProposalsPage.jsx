@@ -6,6 +6,7 @@ import { Toaster, toast } from "sonner";
 
 import { GoalProposal } from "./GoalProposal";
 import { TaskProposal } from "./TaskProposal";
+import { ActivityProposal } from "./ActivityProposal";
 import { useSubmitProposalsMutation } from "../services/proposalsApi";
 
 export function ProposalsPage() {
@@ -19,7 +20,7 @@ export function ProposalsPage() {
   const [proposalsState, setProposalsState] = useState([]);
 
   /* -----------------------------
-     NORMALIZE (UNCHANGED)
+     NORMALIZE
   ------------------------------ */
   useEffect(() => {
     if (!proposals || !thread_id) {
@@ -53,14 +54,14 @@ export function ProposalsPage() {
       prev.map((p) =>
         p.proposal_id === proposal_id
           ? { ...p, payload: { ...p.payload, ...payloadPatch } }
-          : p
-      )
+          : p,
+      ),
     );
   };
 
   const updateStatus = (proposal_id, status) => {
     setProposalsState((prev) =>
-      prev.map((p) => (p.proposal_id === proposal_id ? { ...p, status } : p))
+      prev.map((p) => (p.proposal_id === proposal_id ? { ...p, status } : p)),
     );
   };
 
@@ -79,18 +80,33 @@ export function ProposalsPage() {
   };
 
   /* -----------------------------
-     DERIVED DATA (UNCHANGED)
+     DERIVED DATA
   ------------------------------ */
-  const activeGoals = proposalsState.filter(
-    (p) => p.action_type === "create_goal"
-  );
+  const goals = proposalsState.filter((p) => p.action_type === "create_goal");
+
   const tasks = proposalsState.filter((p) => p.action_type === "create_task");
+
   const subtasks = proposalsState.filter(
-    (p) => p.action_type === "create_subtask"
+    (p) => p.action_type === "create_subtask",
   );
 
+  const activities = proposalsState.filter(
+    (p) => p.action_type === "log_activity",
+  );
+
+  /* -----------------------------
+     PROPOSAL ROOTS (KEY CHANGE)
+  ------------------------------ */
+  const proposalRoots = [
+    ...goals.map((g) => ({ type: "goal", data: g })),
+    ...tasks
+      .filter((t) => !t.payload?.goal_id)
+      .map((t) => ({ type: "task", data: t })),
+    ...activities.map((a) => ({ type: "activity", data: a })),
+  ];
+
   /* =============================
-     UI (LIFE OS THEME)
+     UI
   ============================== */
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-purple-50 text-gray-900">
@@ -125,7 +141,7 @@ export function ProposalsPage() {
             </div>
             <div className="text-right">
               <div className="text-4xl font-bold text-emerald-600">
-                {activeGoals.length}
+                {goals.length}
               </div>
               <div className="text-sm text-gray-500">Active Goals</div>
             </div>
@@ -135,36 +151,45 @@ export function ProposalsPage() {
         {/* CONTENT */}
         <div className="space-y-10">
           <AnimatePresence mode="popLayout">
-            {activeGoals.length > 0 ? (
-              <div className="space-y-8">
-                {activeGoals.map((goal) => (
-                  <GoalProposal
-                    key={goal.proposal_id}
-                    goal={goal}
-                    allTasks={tasks}
-                    allSubtasks={subtasks}
-                    onUpdate={updateEntity}
-                    onStatusChange={updateStatus}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
-                <h2 className="text-2xl font-bold mb-6">Tasks</h2>
-
-                <div className="space-y-6">
-                  {tasks.map((task) => (
-                    <TaskProposal
-                      key={task.proposal_id}
-                      task={task}
+            {proposalRoots.map((root) => {
+              switch (root.type) {
+                case "goal":
+                  return (
+                    <GoalProposal
+                      key={root.data.proposal_id}
+                      goal={root.data}
+                      allTasks={tasks}
                       allSubtasks={subtasks}
                       onUpdate={updateEntity}
                       onStatusChange={updateStatus}
                     />
-                  ))}
-                </div>
-              </div>
-            )}
+                  );
+
+                case "task":
+                  return (
+                    <TaskProposal
+                      key={root.data.proposal_id}
+                      task={root.data}
+                      allSubtasks={subtasks}
+                      onUpdate={updateEntity}
+                      onStatusChange={updateStatus}
+                    />
+                  );
+
+                case "activity":
+                  return (
+                    <ActivityProposal
+                      key={root.data.proposal_id}
+                      activity={root.data}
+                      onUpdate={updateEntity}
+                      onStatusChange={updateStatus}
+                    />
+                  );
+
+                default:
+                  return null;
+              }
+            })}
           </AnimatePresence>
         </div>
 

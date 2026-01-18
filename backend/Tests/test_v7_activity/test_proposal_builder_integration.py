@@ -17,7 +17,7 @@ def test_task_structure_generation_end_to_end(db):
     - Seed criteria
     - User logs an activity
     - LangGraph runs end-to-end
-    - Activity is created using real criteria IDs
+    - Activity is created   using real criteria IDs
     """
 
     # -------------------------------------------------
