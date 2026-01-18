@@ -4,7 +4,7 @@ from datetime import date
 
 from app.core.database import get_db
 from app.models.summary import Summary
-from app.schemas.analytics import AnalyticsRequestSchema
+
 from app.core.security import get_current_user
 
 
@@ -149,7 +149,7 @@ def get_latest_summaries(
 
 @router.post("/aggregate")
 def aggregate_analytics(
-    payload: AnalyticsRequestSchema,
+    payload: AnalyticsRequest,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):

@@ -15,6 +15,7 @@ from app.routes import (
     proposal_routes,
     agent_routes,
     chat_routes,
+    routine_event_routes
 )
 
 # Ensure models are registered
@@ -29,7 +30,7 @@ from app.models.summary import Summary
 from my_agent.models.action_proposal import ActionProposal
 from my_agent.models.agent_run import AgentRun
 from my_agent.models.approval_decision import ApprovalDecision
-
+from app.models.routine_event import RoutineEvent
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Routine Planner")
@@ -53,3 +54,4 @@ app.include_router(analytics_routes.router, prefix="/analytics")
 app.include_router(proposal_routes.router, prefix="/proposals")
 app.include_router(agent_routes.router, prefix="/agent")
 app.include_router(chat_routes.router, prefix="/chat")
+app.include_router(routine_event_routes.router , prefix='/routine-events')

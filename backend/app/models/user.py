@@ -24,5 +24,11 @@ class User(Base):
     habits = relationship("Habit", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")
+    
+    routine_events = relationship(
+        "RoutineEvent",
+        back_populates="user",
+        cascade="all, delete"
+    )
     def __repr__(self):
         return f"<User(username='{self.username}', email='{self.email_id}')>"
