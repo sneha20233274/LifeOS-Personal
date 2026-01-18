@@ -10,6 +10,7 @@ import { chatApi } from "../services/chatApi";
 import { goalsApi } from "../services/goalsApi";
 import { tasksApi } from "../services/tasksApi";
 import { subtasksApi } from "../services/subtasksApi";
+import { activitiesApi } from "../services/activitiesApi"; // ✅ NEW
 
 export const store = configureStore({
   reducer: {
@@ -22,7 +23,8 @@ export const store = configureStore({
     [chatApi.reducerPath]: chatApi.reducer,
     [goalsApi.reducerPath]: goalsApi.reducer,
     [tasksApi.reducerPath]: tasksApi.reducer,
-    [subtasksApi.reducerPath]: subtasksApi.reducer
+    [subtasksApi.reducerPath]: subtasksApi.reducer,
+    [activitiesApi.reducerPath]: activitiesApi.reducer, // ✅ ADD
   },
 
   middleware: (defaultMiddleware) =>
@@ -30,9 +32,10 @@ export const store = configureStore({
       authApi.middleware,
       proposalsApi.middleware,
       chatApi.middleware,
-       goalsApi.middleware,
+      goalsApi.middleware,
       tasksApi.middleware,
-      subtasksApi.middleware
+      subtasksApi.middleware,
+      activitiesApi.middleware // ✅ ADD
     ),
 });
 
@@ -49,10 +52,10 @@ const initialiseApp = () => {
   const auth = localStorage.getItem("auth");
   if (!auth) return;
 
-  // 1️⃣ Hydrate Redux instantly (UI correct)
+  // 1️⃣ Hydrate Redux instantly
   store.dispatch(loadFromStorage(JSON.parse(auth)));
 
-  // 2️⃣ Validate token in background (NO logout here)
+  // 2️⃣ Validate token in background
   store.dispatch(authApi.endpoints.loadUser.initiate());
 };
 
