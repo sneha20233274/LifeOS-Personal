@@ -5,6 +5,7 @@ from my_agent.schemas.routine import RoutineLLMOutput
 from my_agent.schemas.diet import DietPlan
 from my_agent.schemas.fitness import FitnessPlan
 from my_agent.schemas.activity import ActivityCreateList
+from my_agent.schemas.analytics import AggregationOutput
 from langchain_groq import ChatGroq
 from langchain_core.tools import tool
 from dotenv import load_dotenv
@@ -28,7 +29,14 @@ base_llm = ChatGroq(
     model="openai/gpt-oss-120b",
     temperature=0.7
 )
-
+aggregation_llm = ChatGroq(
+    model="openai/gpt-oss-120b",
+    temperature=0.1
+)
+analysis_llm = ChatGroq(
+    model="openai/gpt-oss-120b",
+    temperature=0.5
+)
 goal_prompt_llm = ChatGroq(
     model="llama-3.1-8b-instant",
     temperature=0.1
@@ -92,4 +100,8 @@ structured_fitness_planer_llm = (
 activity_structured_llm = (
     base_llm.bind_tools([json])
     .with_structured_output(ActivityCreateList)
+)
+analytics_structured_llm = (
+    aggregation_llm
+    .with_structured_output(AggregationOutput)
 )

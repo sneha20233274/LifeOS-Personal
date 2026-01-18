@@ -8,6 +8,7 @@ from app.services.Analytics.primitives import ActivityFilters, AggregationSpec
 
 def aggregate_activities(
     db: Session,
+    user_id:int,
     filters: ActivityFilters,
     spec: AggregationSpec,
 ) -> Dict[Any, float] | float:
@@ -25,7 +26,7 @@ def aggregate_activities(
     """
 
     q = db.query(Activity)
-
+    q = q.filter(Activity.user_id == user_id)
     # ---------------------------
     # Date filter (AUTHORITATIVE)
     # ---------------------------

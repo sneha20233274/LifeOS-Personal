@@ -4,7 +4,13 @@ from datetime import date
 
 from app.core.database import get_db
 from app.models.summary import Summary
+from app.schemas.analytics import AnalyticsRequestSchema
+from app.core.security import get_current_user
 
+
+from app.schemas.analytics import AnalyticsRequest
+from app.controllers.analytics_controller import run_analytics
+ 
 router = APIRouter(prefix="/analytics", tags=["Summaries"])
 
 
@@ -139,3 +145,183 @@ def get_latest_summaries(
         }
         for s in summaries
     ]
+
+
+@router.post("/aggregate")
+def aggregate_analytics(
+    payload: AnalyticsRequestSchema,
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    result = run_analytics(
+        db=db,
+        user_id=current_user.user_id,
+        request=payload,
+    )
+
+    return {
+        "data": result
+    }
+
+# @router.post("/summary")
+# def analytics_summary(
+#     payload: ActivityFilters,
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user),
+# ):
+#     result = aggregate_activities(
+#         db=db,
+#         user_id=current_user.user_id,
+#         filters=payload,
+#         spec=AggregationSpec(
+#             group_by="summary_category",
+#             aggregation="sum",
+#             field="duration_minutes",
+#         ),
+#     )
+
+#     return {
+#         "data": result
+#     }
+# @router.post("/weekday-distribution")
+# def weekday_distribution(
+#     payload: ActivityFilters,
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user),
+# ):
+#     result = aggregate_activities(
+#         db=db,
+#         user_id=current_user.user_id,
+#         filters=payload,
+#         spec=AggregationSpec(
+#             group_by="day_of_week",
+#             aggregation="sum",
+#             field="duration_minutes",
+#         ),
+#     )
+
+#     return {
+#         "data": result
+#     }
+# @router.post("/total-time")
+# def total_time(
+#     payload: ActivityFilters,
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user),
+# ):
+#     total = aggregate_activities(
+#         db=db,
+#         user_id=current_user.user_id,
+#         filters=payload,
+#         spec=AggregationSpec(
+#             group_by=None,
+#             aggregation="sum",
+#             field="duration_minutes",
+#         ),
+#     )
+
+#     return {
+#         "total_minutes": total
+#     }
+# from app.services.analytics.visuals import category_distribution
+# @router.post("/summary/visual")
+# def summary_visual(
+#     payload: ActivityFilters,
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user),
+# ):
+#     aggregated = aggregate_activities(
+#         db=db,
+#         user_id=current_user.user_id,
+#         filters=payload,
+#         spec=AggregationSpec(
+#             group_by="summary_category",
+#             aggregation="sum",
+#             field="duration_minutes",
+#         ),
+#     )
+
+#     return category_distribution(aggregated)
+# from app.services.analytics.visuals import weekday_comparison
+# @router.post("/weekday/visual")
+# def weekday_visual(
+#     payload: ActivityFilters,
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user),
+# ):
+#     aggregated = aggregate_activities(
+#         db=db,
+#         user_id=current_user.user_id,
+#         filters=payload,
+#         spec=AggregationSpec(
+#             group_by="day_of_week",
+#             aggregation="sum",
+#             field="duration_minutes",
+#         ),
+#     )
+
+#     return weekday_comparison(aggregated)
+
+# from app.services.analytics.metrics import compute_productivity
+# @router.post("/productivity")
+# def productivity(
+#     payload: ActivityFilters,
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user),
+# ):
+#     aggregated = aggregate_activities(
+#         db=db,
+#         user_id=current_user.user_id,
+#         filters=payload,
+#         spec=AggregationSpec(
+#             group_by="summary_category",
+#             aggregation="sum",
+#             field="duration_minutes",
+#         ),
+#     )
+
+#     score = compute_productivity(aggregated)
+
+#     return {
+#         "productivity_score": score
+#     }
+# class ComparisonRequest(BaseModel):
+#     current: ActivityFilters
+#     previous: ActivityFilters
+
+
+# from app.services.analytics.comparison import compare_values
+
+
+# @router.post("/productivity/compare")
+# def compare_productivity(
+#     payload: ComparisonRequest,
+#     db: Session = Depends(get_db),
+#     current_user=Depends(get_current_user),
+# ):
+#     current_agg = aggregate_activities(
+#         db=db,
+#         user_id=current_user.user_id,
+#         filters=payload.current,
+#         spec=AggregationSpec(
+#             group_by="summary_category",
+#             aggregation="sum",
+#             field="duration_minutes",
+#         ),
+#     )
+
+#     previous_agg = aggregate_activities(
+#         db=db,
+#         user_id=current_user.user_id,
+#         filters=payload.previous,
+#         spec=AggregationSpec(
+#             group_by="summary_category",
+#             aggregation="sum",
+#             field="duration_minutes",
+#         ),
+#     )
+
+#     current_score = compute_productivity(current_agg)
+#     previous_score = compute_productivity(previous_agg)
+
+#     return compare_values(current_score, previous_score)

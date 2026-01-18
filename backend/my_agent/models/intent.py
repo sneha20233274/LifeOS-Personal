@@ -10,7 +10,7 @@ class Intent(str, Enum):
     LOGGING = 'activity_create'
     PLAN_DAY = "plan_day"
 
-    ANALYZE_PRODUCTIVITY = "analyze_productivity"
+    ANALYZE = "analytics"
     ASK_REFLECTION = "ask_reflection"
 
     UPDATE_FITNESS_PLAN = "update_fitness_plan"

@@ -12,9 +12,11 @@ from langgraph.types import Command
 def test_interrupt_approve_resume(db):
     # -------- STEP 1: START AGENT (INTERRUPT EXPECTED) --------
     thread_id = "test-thread-123"
+    user_id = 1
     config = {
         "configurable": {
-            "thread_id": thread_id
+            "thread_id": thread_id,
+            "user_id": user_id
         }
     }
 

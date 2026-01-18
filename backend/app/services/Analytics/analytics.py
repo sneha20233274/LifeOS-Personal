@@ -35,3 +35,4 @@ def goal_progress(goal) -> float:
     )
 
     return weighted / total_difficulty
+

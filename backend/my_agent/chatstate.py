@@ -1,6 +1,7 @@
 from typing import Optional, TypedDict, Annotated, Dict, Any, List
 from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
+from app.utils.dictionary_merger import update_dict
 from my_agent.schemas.activity import ActivityCreate
 
 
@@ -24,6 +25,13 @@ class ChatState(TypedDict, total=False):
     feedback: str
     approved: bool
 
+    # --- Aggregation phase ---
+    aggregation_spec: Optional[Dict[str, Any]]
+    aggregation_result: Optional[Dict[str, Any] | float]
+   
+    # UPDATED: Wrapped in Annotated with update_dict so they merge automatically
+    metric_result: Annotated[Dict[str, Any], update_dict]
+    comparison_result: Annotated[Dict[str, Any], update_dict]
    
     # loop / control info
     iteration: int
