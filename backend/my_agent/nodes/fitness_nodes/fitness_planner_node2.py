@@ -1,7 +1,7 @@
 from my_agent.chatstate import ChatState
 from langchain_core.messages import SystemMessage, HumanMessage
 from my_agent.llm import weekly_focus_llm
-
+from my_agent.prompts.fitness_system_prompt import STRENGTH_SYSTEM_PROMPT,MOBILITY_SYSTEM_PROMPT,CARDIO_SYSTEM_PROMPT
 def weekly_focus_node(state: ChatState) -> ChatState:
     plan = state["fitness_plan"]
 
@@ -47,7 +47,9 @@ def day_timeline_skeleton_node(state: ChatState) -> ChatState:
 Create a workout timeline for {day}.
 
 Focus: {focus}
-
+  constraints:
+  category must be of :  Literal["strength", "cardio", "mobility", "none"]
+  block_type must be of : Literal["warmup", "exercise", "break", "cooldown"]
 Rules:
 - Morning session
 - Include warmup and cooldown
@@ -101,26 +103,60 @@ def timeslot_detail_node(state: ChatState) -> ChatState:
             category = block["category"]
 
             if category == "strength":
-                detail = strength_detail_llm.invoke(
-                    f"Generate ONE strength exercise for {focus}"
-                )
-                block["details"] = detail.model_dump()
+              messages=[ SystemMessage(content=STRENGTH_SYSTEM_PROMPT),
+                    HumanMessage(content= f"""
+              Return ONE strength exercise for focus = "{focus}".
 
+              Rules:
+              - Output structured data only
+              - No explanation
+              - No markdown
+              - No extra text
+              """)       ]
+              detail = strength_detail_llm.invoke(messages)
+              block["details"] = detail.model_dump()
             elif category == "cardio":
-                detail = cardio_detail_llm.invoke(
-                    f"Generate ONE cardio activity appropriate for {focus}"
-                )
+                messages=[SystemMessage(content=CARDIO_SYSTEM_PROMPT),
+                    HumanMessage(content=  f"""
+                          Return ONE cardio activity appropriate for focus = "{focus}".
+
+                          Rules:
+                          - Output structured data only
+                          - No explanation
+                          - No markdown
+                          - No extra text
+                          """
+                  )]
+                detail = cardio_detail_llm.invoke(messages)
                 block["details"] = detail.model_dump()
 
             elif category == "mobility":
-                detail = mobility_detail_llm.invoke(
-                    "Generate ONE mobility drill for warmup or cooldown"
-                )
-                block["details"] = detail.model_dump()
+                    messages=[SystemMessage(content=MOBILITY_SYSTEM_PROMPT),
+                    HumanMessage(content=  f"""
+                              Return a MobilityDetails object for focus = "{focus}".
 
-            else:
-                # break / rest
-                block["details"] = None
+                              Rules (VERY IMPORTANT):
+                              - Output ONLY structured data
+                              - Do NOT explain
+                              - Do NOT use markdown
+                              - Do NOT add extra text
+                              - Instruction must be SHORT (1–2 sentences max)
+                              - Instruction is OPTIONAL
+
+                              # Return exactly one object matching:
+                              # # {{
+                              # #   "name": "<mobility drill name>",
+                              # #   "instruction": "<optional short instruction>"
+                              # # }}
+                              """
+                            )]
+                    detail = mobility_detail_llm.invoke(messages)
+                    block["details"] = detail.model_dump()
+
+        else:
+              # break / rest
+            block["details"] = None
+
 
     return state
 

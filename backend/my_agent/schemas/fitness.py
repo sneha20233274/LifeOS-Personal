@@ -83,7 +83,7 @@ class CardioDetails(BaseModel):
 # ✅ UPDATED: Added "instruction" field for fallback context
 class MobilityDetails(BaseModel):
     name: str
-    instruction: Optional[str] = None
+    instruction: Optional[str] 
 
 class TimeSlotBlock(BaseModel):
     block_type: Literal["warmup","exercise","break","cooldown","rest"]
@@ -107,7 +107,7 @@ class WeeklyFitnessRoutine(BaseModel):
     created_at: str
     status: Literal["draft","approved"]
 
-    
+
 class WeeklyFocus(BaseModel):
     monday: Literal["legs","push","pull","upper","lower","cardio","recovery"]
     tuesday: Literal["legs","push","pull","upper","lower","cardio","recovery"]

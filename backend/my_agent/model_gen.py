@@ -191,7 +191,7 @@ graph.add_edge("fitness_planer", "weekly_focus_node")
 graph.add_edge("weekly_focus_node", "day_timeline_skeleton_node")
 graph.add_edge("day_timeline_skeleton_node", "timeslot_detail_node")
 graph.add_edge("timeslot_detail_node", "weekly_routine_assembly_node")
-graph.add_edge("weekly_routine_assembly_node", "fitness_evaluator_node")
+graph.add_edge("weekly_routine_assembly_node", "proposal_builder")
 
 
 
@@ -290,7 +290,7 @@ final_state = chatbot.invoke(
     config={
         "configurable": {
             "user_id": 1,
-            "thread_id": "fitness_test_thread_1"
+            "thread_id": "fitness_test_thread_7"
         }
     }
 )
