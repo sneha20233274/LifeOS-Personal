@@ -1,15 +1,16 @@
 from my_agent.chatstate import ChatState
 from my_agent.llm import evaluator_structured_llm
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-def fitness_evalautor_node(
+def fitness_evaluator_node(
     state: ChatState
 ) -> ChatState:
     """
     Evaluates the generated fitness plan.
     """
-    fitness_plan = state["fitness_plan"]
+    weekly_routine = state["weekly_routine"]
+
     evaluation_prompt = f"""
-    Given the fitness plan: {fitness_plan},
+    Given the fitness plan: { weekly_routine},
     provide feedback on its effectiveness and safety.
     Suggest improvements if necessary.
     Finally, indicate whether the plan is approved (true/false).

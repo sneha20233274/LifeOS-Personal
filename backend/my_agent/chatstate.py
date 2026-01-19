@@ -28,6 +28,9 @@ class ChatState(TypedDict, total=False):
     # --- Aggregation phase ---
     aggregation_spec: Optional[Dict[str, Any]]
     aggregation_result: Optional[Dict[str, Any] | float]
+    weekly_focus: Dict[str, str]             # monday → focus
+    day_timelines: Dict[str, Dict[str, Any]] # monday → timeline skeleton
+    weekly_routine: Optional[Dict[str, Any]] 
    
     # UPDATED: Wrapped in Annotated with update_dict so they merge automatically
     metric_result: Annotated[Dict[str, Any], update_dict]

@@ -7,9 +7,16 @@ from my_agent.schemas.fitness import FitnessPlan
 from my_agent.schemas.activity import ActivityCreateList
 from my_agent.schemas.analytics import AggregationOutput
 from langchain_groq import ChatGroq
+from my_agent.schemas.fitness import WeeklyFitnessRoutine
 from langchain_core.tools import tool
 from dotenv import load_dotenv
-
+from my_agent.schemas.fitness import WeeklyFocus
+from my_agent.schemas.fitness import (
+    StrengthDetails,
+    CardioDetails,
+    MobilityDetails,
+)
+from my_agent.schemas.fitness import DayTimelineSkeleton
 load_dotenv()
 
 
@@ -47,6 +54,7 @@ evaluator_llm = ChatGroq(
     temperature=0.3
 )
 
+
 routine_llm = ChatGroq(
     model="openai/gpt-oss-120b",
     temperature=0.3
@@ -58,9 +66,7 @@ fitness_planner_llm = ChatGroq(
 )
 
 
-# --------------------------------------------------
-# Structured-output LLMs (Groq-safe)
-# --------------------------------------------------
+
 goal_prompt_structured_llm = (
     goal_prompt_llm
     .bind_tools([json])
@@ -92,9 +98,50 @@ diet_planer_llm = (
 )
 
 structured_fitness_planer_llm = (
-    fitness_planner_llm
-    .bind_tools([json])
+    fitness_planner_llm.bind_tools([json])
     .with_structured_output(FitnessPlan)
+)
+
+weekly_focus_llm = (
+    ChatGroq(
+        model="openai/gpt-oss-120b",
+        temperature=0.1,  # low for determinism
+    ).bind_tools([json])
+    .with_structured_output(WeeklyFocus)
+)
+
+
+day_timeline_llm = (
+    ChatGroq(
+        model="openai/gpt-oss-120b",
+        temperature=0.2,
+    ).bind_tools([json])
+    .with_structured_output(DayTimelineSkeleton)
+)
+
+
+
+
+strength_detail_llm = (
+    ChatGroq(
+        model="openai/gpt-oss-120b",
+        temperature=0.2,
+    ).bind_tools([json])
+    .with_structured_output(StrengthDetails)
+)
+
+cardio_detail_llm = (
+    ChatGroq(
+        model="openai/gpt-oss-120b",
+        temperature=0.2,
+    ).bind_tools([json])
+    .with_structured_output(CardioDetails)
+)
+
+mobility_detail_llm = (
+    ChatGroq(model="openai/gpt-oss-120b", temperature=0.2)
+    .bind_tools([json])
+    .with_structured_output(MobilityDetails)
 )
 
 activity_structured_llm = (
