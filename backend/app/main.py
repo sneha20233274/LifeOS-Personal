@@ -15,7 +15,9 @@ from app.routes import (
     proposal_routes,
     agent_routes,
     chat_routes,
-    routine_event_routes
+    routine_event_routes,
+    reminder_routes,
+    google_auth
 )
 
 # Ensure models are registered
@@ -31,9 +33,16 @@ from my_agent.models.action_proposal import ActionProposal
 from my_agent.models.agent_run import AgentRun
 from my_agent.models.approval_decision import ApprovalDecision
 from app.models.routine_event import RoutineEvent
+from app.models.reminder import Reminder
+
+from app.core.scheduler import start_scheduler
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Routine Planner")
+@app.on_event("startup")
+def startup_event():
+    start_scheduler()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -55,3 +64,5 @@ app.include_router(proposal_routes.router, prefix="/proposals")
 app.include_router(agent_routes.router, prefix="/agent")
 app.include_router(chat_routes.router, prefix="/chat")
 app.include_router(routine_event_routes.router , prefix='/routine-events')
+app.include_router(reminder_routes.router)
+app.include_router(google_auth.router , prefix='/integrations/google')
