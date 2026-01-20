@@ -1,199 +1,236 @@
 import React from "react";
+import { motion } from "framer-motion";
 import {
   Dumbbell,
-  CheckCircle2,
-  XCircle,
-  RotateCcw,
   Target,
   Calendar,
   Flame,
+  Edit2,
+  CheckCircle2,
+  XCircle,
+  RotateCcw,
 } from "lucide-react";
-import { motion } from "framer-motion";
 
-import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { Card, CardContent } from "./ui/card";
 import { Separator } from "./ui/separator";
+import { DayCard }  from "./DayCard";
+/* ---------------------------------------------
+   HELPERS
+---------------------------------------------- */
+
+const STATUS_BORDER = {
+  PENDING: "border-gray-300",
+  APPROVED: "border-green-400",
+  REJECTED: "border-red-400",
+};
 
 /* ---------------------------------------------
-   COLOR MAPS
+   FITNESS PROPOSAL ROOT
 ---------------------------------------------- */
-const STATUS_STYLES = {
-  pending: "border-gray-300",
-  approved: "border-green-400 bg-green-50",
-  rejected: "border-red-400 bg-red-50",
-};
-
-const BLOCK_COLORS = {
-  warmup: "bg-yellow-100 text-yellow-800",
-  exercise: "bg-blue-100 text-blue-800",
-  rest: "bg-gray-100 text-gray-700",
-  cooldown: "bg-purple-100 text-purple-800",
-};
-
-/* =============================================
-   FITNESS PROPOSAL
-============================================= */
-export function FitnessProposal({ proposal, onStatusChange }) {
+export function FitnessProposal({ proposal, onStatusChange, onUpdate }) {
   const { proposal_id, payload, status } = proposal;
 
-  const { plan_snapshot, schedule } = payload;
+  const [draft, setDraft] = React.useState(payload);
+  const isLocked = status === "approved";
+
+  const updateDraft = (patch) => {
+    setDraft((prev) => {
+      const updated = { ...prev, ...patch };
+      onUpdate(proposal_id, updated);
+      return updated;
+    });
+  };
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
-      className={`rounded-3xl border-2 shadow-xl transition-all ${
-        STATUS_STYLES[status]
+      className={`rounded-3xl border-2 shadow-xl bg-white ${
+        STATUS_BORDER[status]
       }`}
     >
       {/* HEADER */}
-      <div className="p-6 flex items-center gap-4">
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow">
-          <Dumbbell className="w-6 h-6" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-3xl font-bold">Weekly Fitness Routine</h2>
-          <p className="text-gray-600 text-sm">
-            AI-generated fitness plan proposal
-          </p>
-        </div>
-
-        <Badge variant="outline" className="capitalize">
-          {status}
+      <div className="p-8 text-center">
+        <Badge className="mb-3 bg-purple-100 text-purple-700">
+          ✨ AI Generated Proposal
         </Badge>
+
+        <h1 className="text-4xl font-bold">Weekly Fitness Routine</h1>
+        <p className="text-gray-500 mt-2">
+          Review and customize your personalized workout plan
+        </p>
       </div>
 
       <Separator />
 
-      {/* PLAN SNAPSHOT */}
-      <CardContent className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4">
-        <Info label="Goal" value={plan_snapshot.goal} icon={Target} />
-        <Info
-          label="Split"
-          value={plan_snapshot.training_split}
-          icon={Dumbbell}
-        />
-        <Info
-          label="Session"
-          value={`${plan_snapshot.session_duration_min} min`}
-          icon={Calendar}
-        />
-        <Info
-          label="Frequency"
-          value={`${plan_snapshot.weekly_frequency} days/week`}
-          icon={Calendar}
-        />
-        <Info
-          label="Intensity"
-          value={`${plan_snapshot.intensity.level} (RPE ${plan_snapshot.intensity.rpe_range.join(
-            "-",
-          )})`}
-          icon={Flame}
-        />
-        <Info
-          label="Recovery"
-          value={`${plan_snapshot.recovery.sleep_hours}h sleep`}
-          icon={Calendar}
-        />
-      </CardContent>
+      {/* PLAN SUMMARY */}
+      <PlanSummary
+        plan={draft.plan_snapshot}
+        disabled={isLocked}
+        onChange={(plan) => updateDraft({ plan_snapshot: plan })}
+      />
 
       <Separator />
 
-      {/* WEEKLY SCHEDULE */}
-      <CardContent className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {Object.entries(schedule).map(([dayKey, day]) => (
-          <div key={dayKey} className="rounded-2xl border bg-white shadow-sm">
-            {/* DAY HEADER */}
-            <div className="p-4 border-b flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-bold capitalize">{dayKey}</h3>
-                <p className="text-sm text-gray-500">Focus: {day.focus}</p>
-              </div>
-
-              <Button size="sm" variant="outline">
-                Edit
-              </Button>
-            </div>
-
-            {/* TIMELINE */}
-            <div className="p-4 space-y-3">
-              {Object.entries(day.timeline).map(([time, block]) => (
-                <div key={time} className="p-3 rounded-xl border bg-gray-50">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-semibold">{time}</span>
-                    <Badge
-                      className={
-                        BLOCK_COLORS[block.block_type] ??
-                        "bg-gray-100 text-gray-700"
-                      }
-                    >
-                      {block.block_type}
-                    </Badge>
-                  </div>
-
-                  <p className="text-sm text-gray-600">
-                    <strong>Category:</strong> {block.category}
-                  </p>
-                  <p className="text-sm text-gray-700">{block.details}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+      {/* DAYS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+        {Object.entries(draft.schedule).map(([dayKey, day]) => (
+          <DayCard
+            key={dayKey}
+            dayKey={dayKey}
+            day={day}
+            disabled={isLocked}
+            onChange={(updatedDay) =>
+              updateDraft({
+                schedule: {
+                  ...draft.schedule,
+                  [dayKey]: updatedDay,
+                },
+              })
+            }
+          />
         ))}
-      </CardContent>
+      </div>
 
-      <Separator />
-
-      {/* ACTIONS */}
-      <CardContent className="p-6 flex justify-end gap-3">
+      {/* ACTION BAR */}
+      <div className="sticky bottom-0 bg-white border-t p-6 flex justify-end gap-4 rounded-b-3xl">
         {status !== "approved" && (
           <Button
-            onClick={() => onStatusChange(proposal_id, "approved")}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 text-white"
+            onClick={() => onStatusChange(proposal_id, "APPROVED")}
           >
             <CheckCircle2 className="w-4 h-4 mr-2" />
-            Approve
+            Approve & Continue
           </Button>
         )}
 
         {status !== "rejected" && (
           <Button
             variant="destructive"
-            onClick={() => onStatusChange(proposal_id, "rejected")}
+            onClick={() => onStatusChange(proposal_id, "REJECTED")}
           >
             <XCircle className="w-4 h-4 mr-2" />
-            Reject
+            Delete Routine
           </Button>
         )}
 
         {status !== "pending" && (
           <Button
             variant="outline"
-            onClick={() => onStatusChange(proposal_id, "pending")}
+            onClick={() => onStatusChange(proposal_id, "PENDING")}
           >
             <RotateCcw className="w-4 h-4 mr-2" />
             Restore
           </Button>
         )}
-      </CardContent>
+      </div>
     </motion.div>
   );
 }
 
 /* ---------------------------------------------
-   INFO TILE
+   PLAN SUMMARY CARD (EDITABLE)
 ---------------------------------------------- */
-function Info({ label, value, icon: Icon }) {
+function PlanSummary({ plan, disabled, onChange }) {
+  const update = (key, value) => onChange({ ...plan, [key]: value });
+
+  return (
+    <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-4">
+      <Field
+        label="Goal"
+        icon={Target}
+        value={plan.goal}
+        disabled={disabled}
+        onChange={(v) => update("goal", v)}
+      />
+
+      <Field
+        label="Training Split"
+        icon={Dumbbell}
+        value={plan.training_split}
+        disabled={disabled}
+        onChange={(v) => update("training_split", v)}
+      />
+
+      <Field
+        label="Session (min)"
+        icon={Calendar}
+        value={plan.session_duration_min}
+        disabled={disabled}
+        type="number"
+        onChange={(v) => update("session_duration_min", Number(v))}
+      />
+
+      <Field
+        label="Frequency / week"
+        icon={Calendar}
+        value={plan.weekly_frequency}
+        disabled={disabled}
+        type="number"
+        onChange={(v) => update("weekly_frequency", Number(v))}
+      />
+
+      <Field
+        label="Intensity"
+        icon={Flame}
+        value={plan.intensity.level}
+        disabled={disabled}
+        onChange={(v) =>
+          update("intensity", {
+            ...plan.intensity,
+            level: v,
+          })
+        }
+      />
+
+      <Field
+        label="Sleep (hrs)"
+        icon={Calendar}
+        value={plan.recovery.sleep_hours}
+        disabled={disabled}
+        type="number"
+        onChange={(v) =>
+          update("recovery", {
+            ...plan.recovery,
+            sleep_hours: Number(v),
+          })
+        }
+      />
+    </div>
+  );
+}
+
+/* ---------------------------------------------
+   DAY CARD (EDITABLE)
+
+/* ---------------------------------------------
+   SMALL FIELD COMPONENT
+---------------------------------------------- */
+function Field({
+  label,
+  value,
+  icon: Icon,
+  onChange,
+  disabled,
+  type = "text",
+}) {
   return (
     <div className="bg-gray-50 rounded-xl p-4 border">
-      <div className="flex items-center gap-2 mb-1 text-gray-600 text-xs">
+      <div className="flex items-center gap-2 text-xs text-gray-600 mb-1">
         <Icon className="w-4 h-4" />
         {label}
       </div>
-      <div className="font-semibold capitalize">{value}</div>
+      <input
+        disabled={disabled}
+        type={type}
+        className="w-full bg-transparent font-semibold focus:outline-none"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }

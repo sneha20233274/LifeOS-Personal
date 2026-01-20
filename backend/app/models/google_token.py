@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from app.core.database import Base
+from sqlalchemy.orm import relationship
 
 
 class GoogleToken(Base):
@@ -26,3 +27,7 @@ class GoogleToken(Base):
 
     expiry = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    user = relationship(
+        "User",
+        back_populates="google_token"
+    )

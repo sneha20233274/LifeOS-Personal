@@ -66,7 +66,7 @@ def resume_chat_controller(
         }
 
         # Enum-safe status update
-        proposal.status = ProposalStatus[incoming["status"]]
+        proposal.status = ProposalStatus[incoming["status"].upper()]
 
     db.commit()
 

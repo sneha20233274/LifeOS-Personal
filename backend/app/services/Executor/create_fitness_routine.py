@@ -20,6 +20,7 @@ class CreateFitnessRoutineExecutor:
             status=payload["status"],
         )
         db.add(routine)
+        db.flush() 
 
         # 2️⃣ Store derived timeline blocks
         for day, day_data in payload["schedule"].items():
@@ -36,9 +37,12 @@ class CreateFitnessRoutineExecutor:
                     )
                 )
 
+        db.commit()
+
         return {
             "data": {
                 "routine_id": payload["routine_id"],
                 "status": "stored"
             }
         }
+       

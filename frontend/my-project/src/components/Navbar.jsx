@@ -21,7 +21,7 @@ export function Navbar({ isRoutineCompleted }) {
 
   const isActive = (path) => location.pathname === path;
 
-  const navItem = (label, icon: Icon, path) => (
+  const navItem = (label, Icon, path) => (
     <button
       onClick={() => navigate(path)}
       className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all

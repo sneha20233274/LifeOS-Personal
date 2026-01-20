@@ -8,6 +8,8 @@ import { TimelineExercise } from "./TimelineExercise";
 import { FitnessIntroAnimation } from "./FitnessIntroAnimation";
 import { useGetWeeklyFitnessRoutineQuery } from "../services/fitnessApi";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
 
 
 /* ------------------------------------------------
@@ -46,28 +48,56 @@ function timelineToBlocks(timeline) {
    COMPONENT
 ------------------------------------------------- */
 export default function FitnessTab() {
+  const navigate = useNavigate();
+
   const [showIntro, setShowIntro] = useState(true);
   const [blocks, setBlocks] = useState([]);
 
-  const todayKey = getTodayKey();
-
-  const userId = useSelector((state) => state.auth.user?.id);
+  const { user } = useSelector((s) => s.auth);
 
   const {
     data: weeklyFitnessRoutine,
     isLoading,
     isError,
-  } = useGetWeeklyFitnessRoutineQuery(userId, {
-    skip: !userId,
-  });
+  } = useGetWeeklyFitnessRoutineQuery(user?.user_id);
 
-  
-  const daySchedule = weeklyFitnessRoutine.schedule?.[todayKey];
+  const todayKey = getTodayKey();
+
+  const daySchedule = weeklyFitnessRoutine?.schedule?.[todayKey];
+
   useEffect(() => {
-    if (daySchedule) {
+    if (daySchedule?.timeline) {
       setBlocks(timelineToBlocks(daySchedule.timeline));
+    } else {
+      setBlocks([]);
     }
   }, [daySchedule]);
+
+  /* ------------------------------------------------
+     LOADING / ERROR STATES (SAFE)
+  ------------------------------------------------- */
+  if (isLoading) {
+    return <div className="text-white p-6">Loading workout…</div>;
+  }
+
+  if (isError) {
+    return <div className="text-red-400 p-6">Failed to load routine</div>;
+  }
+
+  if (!weeklyFitnessRoutine || !weeklyFitnessRoutine.schedule) {
+    return <div className="text-white p-6">No routine available</div>;
+  }
+
+  /* ------------------------------------------------
+     SAFE DERIVED DATA (AFTER GUARDS)
+  ------------------------------------------------- */
+ 
+
+  if (!daySchedule) {
+    return <div className="text-white p-6">No workout scheduled today</div>;
+  }
+  const plan = weeklyFitnessRoutine.plan_snapshot;
+
 
   const completedCount = blocks.filter((b) => b.completed).length;
   const totalCount = blocks.length;
@@ -84,21 +114,6 @@ export default function FitnessTab() {
   /* ------------------------------------------------
      DERIVED DISPLAY DATA (LLM FIELDS)
   ------------------------------------------------- */
-  const plan = weeklyFitnessRoutine.plan_snapshot;
-    if (isLoading) {
-      return <div className="text-white p-6">Loading workout…</div>;
-    }
-
-    if (isError || !weeklyFitnessRoutine) {
-      return <div className="text-red-400 p-6">Failed to load routine</div>;
-  }
-  
-
-  if (!daySchedule) {
-    return (
-      <div className="text-white p-6">No workout scheduled for today.</div>
-    );
-  }
 
   return (
     <>
@@ -187,10 +202,12 @@ export default function FitnessTab() {
           <div className="max-w-2xl mx-auto px-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-white">Schedule</h3>
-              <Button variant="ghost" className="text-white">
-                <Calendar className="w-4 h-4 mr-2" />
-                Week View
-                <ChevronRight className="w-4 h-4 ml-1" />
+              <Button
+                variant="ghost"
+                className="text-white"
+                onClick={() => navigate("/fitness/week")}
+              >
+                Week View →
               </Button>
             </div>
 

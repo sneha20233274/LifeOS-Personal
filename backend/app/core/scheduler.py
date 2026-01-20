@@ -1,5 +1,5 @@
 from apscheduler.schedulers.background import BackgroundScheduler
-from app.core.database import get_db
+from app.core.database import  SessionLocal
 from app.services.reminder_executor import fetch_due_reminders, execute_reminder
 import asyncio
 
@@ -8,7 +8,7 @@ scheduler = BackgroundScheduler()
 
 
 def reminder_job():
-    db = get_db()
+    db = SessionLocal()
     reminders = fetch_due_reminders(db)
 
     for reminder in reminders:

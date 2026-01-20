@@ -15,25 +15,37 @@ function getIcon(block) {
 }
 
 function getTitle(block) {
-  if (block.category === "strength") return block.details.exercise_name;
-  if (block.category === "cardio") return block.details.activity;
-  if (block.category === "mobility") return block.details.name;
+  if (block.category === "strength" && block.details)
+    return block.details.exercise_name;
+
+  if (block.category === "cardio" && block.details)
+    return block.details.activity;
+
+  if (block.category === "mobility" && block.details) return block.details.name;
+
   if (block.block_type === "break") return "Rest / Water Break";
+
   return "Workout";
 }
 
 function getDescription(block) {
+  if (!block.details) return null;
+
   if (block.category === "strength") {
     return `${block.details.sets} sets of ${block.details.reps} reps`;
   }
+
   if (block.category === "mobility") {
-    return block.details.instruction;
+    return block.details.instruction ?? null;
   }
+
   if (block.category === "cardio") {
     return `Intensity: ${block.details.intensity}`;
   }
-  return "Recovery period";
+
+  return null;
 }
+
 
 /* ------------------------------------
    COMPONENT (UI UNCHANGED)
