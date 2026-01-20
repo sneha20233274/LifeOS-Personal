@@ -1,13 +1,40 @@
-import { User, CheckCircle2, Circle, LogOut } from "lucide-react";
+import {
+  User,
+  CheckCircle2,
+  Circle,
+  LogOut,
+  Home,
+  Dumbbell,
+  Sparkles,
+  BarChart3,
+} from "lucide-react";
 import { Button } from "./ui/Button";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { logout } from "../store/authSlice";
 
 export function Navbar({ isRoutineCompleted }) {
   const { isAuthenticated } = useSelector((s) => s.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
+
+  const navItem = (label, icon: Icon, path) => (
+    <button
+      onClick={() => navigate(path)}
+      className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all
+        ${
+          isActive(path)
+            ? "bg-white text-purple-700 shadow-lg"
+            : "text-white/80 hover:bg-white/20 hover:text-white"
+        }`}
+    >
+      <Icon className="w-4 h-4" />
+      {label}
+    </button>
+  );
 
   return (
     <nav
@@ -18,10 +45,17 @@ export function Navbar({ isRoutineCompleted }) {
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-white">Life OS</h1>
+        {/* LEFT */}
+        <div className="flex items-center gap-6">
+          {/* Logo */}
+          <div
+            onClick={() => navigate("/")}
+            className="cursor-pointer flex items-center gap-3"
+          >
+            <h1 className="text-2xl font-bold text-white">Life OS</h1>
+          </div>
 
+          {/* Status Badge */}
           <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
             {isRoutineCompleted ? (
               <CheckCircle2 className="w-5 h-5 text-white" />
@@ -34,7 +68,17 @@ export function Navbar({ isRoutineCompleted }) {
           </div>
         </div>
 
-        {/* Right side */}
+        {/* CENTER NAV */}
+        {isAuthenticated && (
+          <div className="hidden md:flex items-center gap-2 bg-white/10 p-1 rounded-full">
+            {navItem("Home", Home, "/")}
+            {navItem("Fitness", Dumbbell, "/fitness")}
+            {navItem("AI Planner", Sparkles, "/planner")}
+            {navItem("Dashboard", BarChart3, "/dashboard")}
+          </div>
+        )}
+
+        {/* RIGHT */}
         <div className="flex items-center gap-3">
           {!isAuthenticated ? (
             <>
@@ -54,7 +98,7 @@ export function Navbar({ isRoutineCompleted }) {
             </>
           ) : (
             <>
-              {/* Profile icon */}
+              {/* Profile */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -63,7 +107,7 @@ export function Navbar({ isRoutineCompleted }) {
                 <User className="w-5 h-5" />
               </Button>
 
-              {/* Logout button */}
+              {/* Logout */}
               <Button
                 onClick={() => {
                   dispatch(logout());
