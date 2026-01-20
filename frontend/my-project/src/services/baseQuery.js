@@ -13,21 +13,21 @@ const rawBaseQuery = fetchBaseQuery({
 });
 
 export const baseQuery = async (args, api, extraOptions) => {
-  // 1️⃣ First attempt
+  // 1️⃣ First request
   let result = await rawBaseQuery(args, api, extraOptions);
 
-  // 2️⃣ Access token expired
+  // 2️⃣ If access token expired
   if (result.error?.status === 401) {
     const auth = JSON.parse(localStorage.getItem("auth"));
     const refreshToken = auth?.refresh;
 
-    // no refresh token → force logout
+    // ❌ No refresh token → logout
     if (!refreshToken) {
       api.dispatch(logout());
       return result;
     }
 
-    // 3️⃣ Call refresh
+    // 3️⃣ Call refresh endpoint
     const refreshResult = await rawBaseQuery(
       {
         url: "/auth/refresh",
@@ -38,14 +38,19 @@ export const baseQuery = async (args, api, extraOptions) => {
       extraOptions
     );
 
-    // 4️⃣ Refresh success → save new tokens
-    if (refreshResult.data) {
-      api.dispatch(setCredentials(refreshResult.data));
+    // 4️⃣ If refresh succeeded
+    if (refreshResult.data?.access_token) {
+      api.dispatch(
+        setCredentials({
+          access: refreshResult.data.access_token,
+          refresh: refreshToken, // keep same refresh
+        })
+      );
 
-      // 5️⃣ Retry original request
+      // 5️⃣ Retry original request with NEW access token
       result = await rawBaseQuery(args, api, extraOptions);
     } else {
-      // refresh failed (revoked / expired)
+      // refresh failed → logout
       api.dispatch(logout());
     }
   }

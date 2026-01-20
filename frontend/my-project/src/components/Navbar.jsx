@@ -105,6 +105,7 @@ export function Navbar({ isRoutineCompleted }) {
                 variant="ghost"
                 size="icon"
                 className="rounded-full bg-white/20 hover:bg-white/30 text-white"
+                onClick={() => navigate("/profile")}
               >
                 <User className="w-5 h-5" />
               </Button>

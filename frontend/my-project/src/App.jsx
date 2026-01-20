@@ -17,7 +17,7 @@ import { CreateTask } from "./components/CreateTask";
 import FitnessTab from "./components/FitnessTab";
 import {WeeklyViewFitness} from "./components/WeeklyViewFitness";
 import  Reminder  from "./components/Reminder";
-
+import Profile from "./components/Profile";
 export default function App() {
   return (
     <Routes>
@@ -41,6 +41,7 @@ export default function App() {
         <Route path="/session/:threadId" element={<ChatInterface />} />
         <Route path="/fitness" element={<FitnessTab />} />
         <Route path="/fitness/week" element={<WeeklyViewFitness />} />
+        <Route path="/profile" element={<Profile/>}/>
       </Route>
 
       {/* ROUTES WITHOUT NAVBAR */}
