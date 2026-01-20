@@ -12,7 +12,7 @@ import ChatInterface from "./components/ChatInterface";
 import SessionPage from "./components/SessionPage";
 import { CreateSubtask } from "./components/CreateSubtask";
 import { CreateTask } from "./components/CreateTask";
-
+import  Reminder  from "./components/Reminder";
 export default function App() {
   
   return (
@@ -36,6 +36,8 @@ export default function App() {
       <Route path="/planner" element={<SessionPage />} />
       <Route path="/session/:threadId" element={<ChatInterface />} />
       <Route path="/show-plan" element={<ProposalsPage />} />
+      
+      <Route path = '/calender' element = {<Reminder/>}/>
     </Routes>
   );
 }
