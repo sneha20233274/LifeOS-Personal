@@ -10,7 +10,8 @@ import { chatApi } from "../services/chatApi";
 import { goalsApi } from "../services/goalsApi";
 import { tasksApi } from "../services/tasksApi";
 import { subtasksApi } from "../services/subtasksApi";
-import { activitiesApi } from "../services/activitiesApi"; // ✅ NEW
+import { activitiesApi } from "../services/activitiesApi";
+import { fitnessApi } from "../services/fitnessApi"; 
 
 export const store = configureStore({
   reducer: {
@@ -25,6 +26,7 @@ export const store = configureStore({
     [tasksApi.reducerPath]: tasksApi.reducer,
     [subtasksApi.reducerPath]: subtasksApi.reducer,
     [activitiesApi.reducerPath]: activitiesApi.reducer, // ✅ ADD
+    [fitnessApi.reducerPath]: fitnessApi.reducer,
   },
 
   middleware: (defaultMiddleware) =>
@@ -35,13 +37,12 @@ export const store = configureStore({
       goalsApi.middleware,
       tasksApi.middleware,
       subtasksApi.middleware,
-      activitiesApi.middleware // ✅ ADD
+      activitiesApi.middleware,
+      fitnessApi.middleware// ✅ ADD
     ),
 });
 
-/* --------------------------------
-   APP INITIALISATION (AUTH) ✅
----------------------------------- */
+
 
 let initialized = false;
 

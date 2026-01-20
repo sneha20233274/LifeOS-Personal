@@ -17,7 +17,8 @@ from app.routes import (
     chat_routes,
     routine_event_routes,
     reminder_routes,
-    google_auth
+    google_auth,
+    fitness
 )
 
 # Ensure models are registered
@@ -65,4 +66,5 @@ app.include_router(agent_routes.router, prefix="/agent")
 app.include_router(chat_routes.router, prefix="/chat")
 app.include_router(routine_event_routes.router , prefix='/routine-events')
 app.include_router(reminder_routes.router)
+app.include_router(fitness.router,prefix="/fitness")
 app.include_router(google_auth.router , prefix='/integrations/google')

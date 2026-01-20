@@ -86,14 +86,13 @@ def proposal_builder_node(state: ChatState):
                     "criteria_ids": activity.criteria_ids,
                 }
             })       
-    # ---------------------------
-    # 3️⃣ Fitness / Diet (unchanged)
-    # ---------------------------
-    if state.get("fitness_plan"):
+    
+    if state.get("weekly_routine"):
         proposals.append({
-            "action_type": "update_fitness_plan",
-            "payload": state["fitness_plan"]
+            "action_type": "create_weekly_fitness_routine",
+            "payload": state["weekly_routine"]
         })
+
 
     if state.get("diet_plan"):
         proposals.append({
