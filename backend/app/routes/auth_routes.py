@@ -39,57 +39,43 @@ def login(payload: UserLogin, db: Session = Depends(get_db)):
 
 @router.post("/refresh", response_model=TokenOut)
 def refresh_token(payload: TokenRefresh, db: Session = Depends(get_db)):
-    print("==== REFRESH TOKEN DEBUG START ====")
-    print("Incoming refresh token:", payload.refresh_token)
-
     try:
         decoded = decode_token(payload.refresh_token)
-        print("Decoded token payload:", decoded)
 
-        token_type = decoded.get("type")
-        print("Token type:", token_type)
-
-        if token_type != "refresh":
-            print("❌ Token type mismatch")
+        if decoded.get("type") != "refresh":
             raise HTTPException(status_code=401, detail="Invalid token type")
 
         jti = decoded.get("jti")
-        print("Extracted JTI from token:", jti)
-
-        is_revoked = is_refresh_token_revoked(db, jti)
-        print("Is token revoked according to DB?", is_revoked)
-
-        if is_revoked:
-            print("❌ Token is considered revoked")
+        if is_refresh_token_revoked(db, jti):
             raise HTTPException(status_code=401, detail="Token revoked")
 
         user_id = decoded.get("sub")
-        print("User ID from token:", user_id)
 
-    except JWTError as e:
-        print("❌ JWT Error:", str(e))
+    except JWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
+    # issue new access token
     access = create_access_token(subject=str(user_id))
-    print("✅ New access token generated")
-    print("==== REFRESH TOKEN DEBUG END ====")
 
-    return TokenOut(access_token=access, refresh_token=payload.refresh_token)
+    return TokenOut(
+        access_token=access,
+        refresh_token=payload.refresh_token,  # unchanged (no rotation)
+    )
 
 
-@router.post("/logout")
+@router.post("/logout", status_code=204)
 def logout(payload: TokenRefresh, db: Session = Depends(get_db)):
-    # revoke the provided refresh token
     try:
         decoded = decode_token(payload.refresh_token)
         jti = decoded.get("jti")
+        if jti:
+            revoke_refresh_token(db, jti)
     except JWTError:
-        raise HTTPException(status_code=400, detail="Invalid token")
-    rt = revoke_refresh_token(db, jti)
-    if not rt:
-        # If token doesn't exist we still return 204 but could log it
-        return {"msg": "ok"}
-    return {"msg": "logged_out"}
+        # invalid / expired token → still succeed
+        pass
+
+    return
+
 
 @router.get("/profile")
 def get_profile(current_user: User = Depends(get_current_user)):

@@ -1,5 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { setCredentials } from "../store/authSlice";
+import { setCredentials,logout } from "../store/authSlice";
 import { baseQuery } from "./baseQuery"; // ✅ shared baseQuery
 
 export const authApi = createApi({
@@ -30,6 +30,28 @@ export const authApi = createApi({
         body,
       }),
     }),
+    /* ---------------- LOGOUT ---------------- */
+logout: builder.mutation({
+  query: () => {
+    const auth = JSON.parse(localStorage.getItem("auth"));
+    return {
+      url: "/auth/logout",
+      method: "POST",
+      body: {
+        refresh_token: auth?.refresh,
+      },
+    };
+  },
+  async onQueryStarted(_, { dispatch, queryFulfilled }) {
+    try {
+      await queryFulfilled;
+    } finally {
+      // Always clear local state (even if API fails)
+      dispatch(logout());
+    }
+  },
+}),
+
 
     /* ---------------- LOAD USER ---------------- */
     loadUser: builder.query({
@@ -61,4 +83,5 @@ export const {
   useLoginMutation,
   useSignupMutation,
   useLoadUserQuery,
+  useLogoutMutation,
 } = authApi;
