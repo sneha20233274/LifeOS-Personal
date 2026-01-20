@@ -42,9 +42,7 @@ export const store = configureStore({
     ),
 });
 
-/* --------------------------------
-   APP INITIALISATION (AUTH) ✅
----------------------------------- */
+
 
 let initialized = false;
 

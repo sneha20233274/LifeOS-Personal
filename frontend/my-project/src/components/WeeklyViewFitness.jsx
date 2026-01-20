@@ -17,6 +17,17 @@ const DAY_COLORS = {
 };
 
 export function WeeklyViewFitness() {
+  const navigate = useNavigate();
+  const { user } = useSelector((s) => s.auth);
+
+  const { data: routine, isLoading } = useGetWeeklyFitnessRoutineQuery(
+    user?.user_id,
+  );
+
+  if (isLoading || !routine) {
+    return <div className="text-white p-6">Loading week view…</div>;
+  }
+
   return (
     <div className="relative min-h-screen bg-black text-white">
       {/* SAME BACKGROUND FEEL */}
@@ -30,9 +41,12 @@ export function WeeklyViewFitness() {
 
       {/* HEADER */}
       <div className="px-6 py-4 border-b border-white/20 backdrop-blur">
-        <Button variant="ghost" onClick={onBack} className="text-white">
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Back
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="text-white"
+        >
+          ← Back
         </Button>
 
         <h1 className="text-3xl font-bold mt-2">Weekly Workout Plan</h1>

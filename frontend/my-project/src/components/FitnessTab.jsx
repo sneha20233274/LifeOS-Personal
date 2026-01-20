@@ -1,22 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
-import { Dumbbell, Calendar, Menu, Settings, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import { Dumbbell, Menu, Settings } from "lucide-react";
 
 import { Button } from "./ui/Button";
 import { TimelineExercise } from "./TimelineExercise";
 import { FitnessIntroAnimation } from "./FitnessIntroAnimation";
+import { CelebrationModal } from "./CelebrationModal";
+
 import { useGetWeeklyFitnessRoutineQuery } from "../services/fitnessApi";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-
-
-
-/* ------------------------------------------------
-   INPUT: WeeklyFitnessRoutine (from backend / LLM)
-------------------------------------------------- */
-
-// ⬆️ replace with API later
 
 /* ------------------------------------------------
    HELPERS
@@ -26,7 +19,11 @@ function getTodayKey() {
   return new Date()
     .toLocaleDateString("en-US", { weekday: "long" })
     .toLowerCase();
- 
+}
+
+function timeToMinutes(timeStr) {
+  const [h, m] = timeStr.split(":").map(Number);
+  return h * 60 + m;
 }
 
 function timelineToBlocks(timeline) {
@@ -35,7 +32,7 @@ function timelineToBlocks(timeline) {
     return {
       id: `${range}-${index}`,
       time: start,
-      duration: 10,
+      duration: Math.max(timeToMinutes(end) - timeToMinutes(start), 0),
       block_type: block.block_type,
       category: block.category,
       details: block.details,
@@ -47,11 +44,16 @@ function timelineToBlocks(timeline) {
 /* ------------------------------------------------
    COMPONENT
 ------------------------------------------------- */
+
 export default function FitnessTab() {
   const navigate = useNavigate();
+  const todayKey = getTodayKey();
 
   const [showIntro, setShowIntro] = useState(true);
   const [blocks, setBlocks] = useState([]);
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  const initializedRef = useRef(false); // 🔒 important
 
   const { user } = useSelector((s) => s.auth);
 
@@ -61,20 +63,41 @@ export default function FitnessTab() {
     isError,
   } = useGetWeeklyFitnessRoutineQuery(user?.user_id);
 
-  const todayKey = getTodayKey();
-
   const daySchedule = weeklyFitnessRoutine?.schedule?.[todayKey];
 
+  /* ------------------------------------------------
+     INITIALIZE BLOCKS (ONCE PER DAY)
+  ------------------------------------------------- */
   useEffect(() => {
-    if (daySchedule?.timeline) {
+    if (!daySchedule?.timeline) return;
+
+    if (!initializedRef.current) {
       setBlocks(timelineToBlocks(daySchedule.timeline));
-    } else {
-      setBlocks([]);
+      initializedRef.current = true;
+      setShowCelebration(false);
     }
   }, [daySchedule]);
 
   /* ------------------------------------------------
-     LOADING / ERROR STATES (SAFE)
+     PROGRESS
+  ------------------------------------------------- */
+  const completedCount = blocks.filter((b) => b.completed).length;
+  const totalCount = blocks.length;
+
+  const progress =
+    totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  /* ------------------------------------------------
+     CELEBRATION TRIGGER
+  ------------------------------------------------- */
+  useEffect(() => {
+    if (progress === 100 && totalCount > 0) {
+      setShowCelebration(true);
+    }
+  }, [progress, totalCount]);
+
+  /* ------------------------------------------------
+     GUARDS
   ------------------------------------------------- */
   if (isLoading) {
     return <div className="text-white p-6">Loading workout…</div>;
@@ -84,27 +107,15 @@ export default function FitnessTab() {
     return <div className="text-red-400 p-6">Failed to load routine</div>;
   }
 
-  if (!weeklyFitnessRoutine || !weeklyFitnessRoutine.schedule) {
-    return <div className="text-white p-6">No routine available</div>;
-  }
-
-  /* ------------------------------------------------
-     SAFE DERIVED DATA (AFTER GUARDS)
-  ------------------------------------------------- */
- 
-
-  if (!daySchedule) {
+  if (!weeklyFitnessRoutine || !daySchedule) {
     return <div className="text-white p-6">No workout scheduled today</div>;
   }
+
   const plan = weeklyFitnessRoutine.plan_snapshot;
 
-
-  const completedCount = blocks.filter((b) => b.completed).length;
-  const totalCount = blocks.length;
-  const progress = totalCount
-    ? Math.round((completedCount / totalCount) * 100)
-    : 0;
-
+  /* ------------------------------------------------
+     ACTIONS
+  ------------------------------------------------- */
   const toggleBlock = (id) => {
     setBlocks((prev) =>
       prev.map((b) => (b.id === id ? { ...b, completed: !b.completed } : b)),
@@ -112,19 +123,16 @@ export default function FitnessTab() {
   };
 
   /* ------------------------------------------------
-     DERIVED DISPLAY DATA (LLM FIELDS)
+     UI
   ------------------------------------------------- */
-
   return (
     <>
-      {/* Intro Animation */}
       <AnimatePresence>
         {showIntro && (
           <FitnessIntroAnimation onComplete={() => setShowIntro(false)} />
         )}
       </AnimatePresence>
 
-      {/* MAIN UI */}
       {!showIntro && (
         <div className="relative min-h-screen overflow-hidden bg-black">
           {/* Background */}
@@ -177,28 +185,7 @@ export default function FitnessTab() {
             ))}
           </div>
 
-          {/* PLAN DETAILS (ALL LLM FIELDS) */}
-          <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto px-6 mb-8">
-            <Info label="Goal" value={plan.goal} />
-            <Info label="Experience" value={plan.experience_level} />
-            <Info label="Split" value={plan.training_split} />
-            <Info
-              label="Intensity"
-              value={`${plan.intensity.level} (RPE ${plan.intensity.rpe_range.join(
-                "-",
-              )})`}
-            />
-            <Info
-              label="Frequency"
-              value={`${plan.weekly_frequency} days/week`}
-            />
-            <Info
-              label="Recovery"
-              value={`${plan.recovery.sleep_hours}h sleep`}
-            />
-          </div>
-
-          {/* TIMELINE */}
+          {/* Timeline */}
           <div className="max-w-2xl mx-auto px-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-white">Schedule</h3>
@@ -211,7 +198,6 @@ export default function FitnessTab() {
               </Button>
             </div>
 
-            {/* Vertical line */}
             <div className="relative">
               <div className="absolute left-[100px] top-0 bottom-0 border-l-2 border-dashed border-white/30" />
 
@@ -237,12 +223,24 @@ export default function FitnessTab() {
           </div>
         </div>
       )}
+
+      {/* 🔥 Celebration Modal (TOP LEVEL) */}
+      <AnimatePresence>
+        {showCelebration && (
+          <CelebrationModal
+            onClose={() => setShowCelebration(false)}
+            calories={420}
+            duration={plan.session_duration_min}
+            exercises={totalCount}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }
 
 /* ------------------------------------------------
-   SMALL UI HELPER
+   INFO TILE
 ------------------------------------------------- */
 function Info({ label, value }) {
   return (

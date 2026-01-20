@@ -14,7 +14,7 @@ import SessionPage from "./components/SessionPage";
 import { CreateSubtask } from "./components/CreateSubtask";
 import { CreateTask } from "./components/CreateTask";
 import FitnessTab from "./components/FitnessTab";
-import WeeklyRoutineFitness from "./components/WeeklyRoutineFitness ";
+import {WeeklyViewFitness} from "./components/WeeklyViewFitness";
 
 
 export default function App() {
@@ -39,7 +39,7 @@ export default function App() {
         <Route path="/planner" element={<SessionPage />} />
         <Route path="/session/:threadId" element={<ChatInterface />} />
         <Route path="/fitness" element={<FitnessTab />} />
-        <Route path="/fitness/week" element={<WeeklyRoutineFitness />} />
+        <Route path="/fitness/week" element={<WeeklyViewFitness />} />
       </Route>
 
       {/* ROUTES WITHOUT NAVBAR */}

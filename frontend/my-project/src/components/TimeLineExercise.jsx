@@ -70,27 +70,36 @@ export function TimelineExercise({ block, index, onToggle, isLast }) {
       {/* Icon */}
       <div className="flex-shrink-0 relative">
         <motion.div
+          onClick={onToggle} // ✅ IMPORTANT
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") onToggle();
+          }}
           className={`
-            w-14 h-14 rounded-full flex items-center justify-center shadow-lg relative z-10
-            ${
-              block.completed
-                ? "bg-gradient-to-br from-green-400 to-emerald-500"
-                : "bg-white/20 backdrop-blur-md border-2 border-white/40"
-            }
-          `}
-          whileHover={{ scale: 1.1 }}
+    w-14 h-14 rounded-full flex items-center justify-center shadow-lg relative z-10
+    cursor-pointer select-none
+    ${
+      block.completed
+        ? "bg-gradient-to-br from-green-400 to-emerald-500"
+        : "bg-white/20 backdrop-blur-md border-2 border-white/40 hover:bg-white/30"
+    }
+  `}
+          whileHover={{ scale: 1.12 }}
+          whileTap={{ scale: 0.92 }} // ✅ tactile feedback
           animate={
             block.completed
               ? {
                   boxShadow: [
                     "0 0 0 0 rgba(16, 185, 129, 0.4)",
-                    "0 0 0 10px rgba(16, 185, 129, 0)",
+                    "0 0 0 12px rgba(16, 185, 129, 0)",
                   ],
                 }
               : {}
           }
           transition={{
             boxShadow: { duration: 1.5, repeat: Infinity },
+            scale: { type: "spring", stiffness: 300, damping: 20 },
           }}
         >
           <span className="text-2xl">{icon}</span>
