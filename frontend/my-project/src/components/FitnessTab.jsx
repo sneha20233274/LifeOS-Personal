@@ -21,6 +21,11 @@ function getTodayKey() {
     .toLowerCase();
 }
 
+function getTodayDateString() {
+  const date = new Date();
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
 function timeToMinutes(timeStr) {
   const [h, m] = timeStr.split(":").map(Number);
   return h * 60 + m;
@@ -48,12 +53,13 @@ function timelineToBlocks(timeline) {
 export default function FitnessTab() {
   const navigate = useNavigate();
   const todayKey = getTodayKey();
+  const dateString = getTodayDateString();
 
   const [showIntro, setShowIntro] = useState(true);
   const [blocks, setBlocks] = useState([]);
   const [showCelebration, setShowCelebration] = useState(false);
 
-  const initializedRef = useRef(false); // 🔒 important
+  const initializedRef = useRef(false);
 
   const { user } = useSelector((s) => s.auth);
 
@@ -65,65 +71,88 @@ export default function FitnessTab() {
 
   const daySchedule = weeklyFitnessRoutine?.schedule?.[todayKey];
 
+  // 🔑 STORAGE KEYS
+  const storageKey = user ? `fitness_data_${user.user_id}_${dateString}` : null;
+  const celebrationKey = user
+    ? `fitness_celebrated_${user.user_id}_${dateString}`
+    : null;
+
   /* ------------------------------------------------
-     INITIALIZE BLOCKS (ONCE PER DAY)
+     1. INITIALIZE & LOAD DATA
   ------------------------------------------------- */
   useEffect(() => {
-    if (!daySchedule?.timeline) return;
+    if (!daySchedule?.timeline || !storageKey) return;
 
     if (!initializedRef.current) {
-      setBlocks(timelineToBlocks(daySchedule.timeline));
+      const savedData = localStorage.getItem(storageKey);
+
+      if (savedData) {
+        setBlocks(JSON.parse(savedData));
+      } else {
+        setBlocks(timelineToBlocks(daySchedule.timeline));
+      }
       initializedRef.current = true;
-      setShowCelebration(false);
     }
-  }, [daySchedule]);
+  }, [daySchedule, storageKey]);
 
   /* ------------------------------------------------
-     PROGRESS
+     2. CALCULATE PROGRESS
   ------------------------------------------------- */
   const completedCount = blocks.filter((b) => b.completed).length;
   const totalCount = blocks.length;
-
   const progress =
     totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   /* ------------------------------------------------
-     CELEBRATION TRIGGER
+     3. CELEBRATION LOGIC
   ------------------------------------------------- */
   useEffect(() => {
-    if (progress === 100 && totalCount > 0) {
+    if (!celebrationKey || totalCount === 0) return;
+
+    // Check if previously celebrated today
+    const hasCelebrated = localStorage.getItem(celebrationKey) === "true";
+
+    // ✅ IF: Progress is 100% AND We haven't celebrated yet
+    if (progress === 100 && !hasCelebrated) {
       setShowCelebration(true);
+      localStorage.setItem(celebrationKey, "true"); // Mark as shown
     }
-  }, [progress, totalCount]);
+  }, [progress, totalCount, celebrationKey]);
 
   /* ------------------------------------------------
      GUARDS
   ------------------------------------------------- */
-  if (isLoading) {
-    return <div className="text-white p-6">Loading workout…</div>;
-  }
-
-  if (isError) {
-    return <div className="text-red-400 p-6">Failed to load routine</div>;
-  }
-
-  if (!weeklyFitnessRoutine || !daySchedule) {
-    return <div className="text-white p-6">No workout scheduled today</div>;
-  }
+  if (isLoading) return <div className="text-white p-6">Loading...</div>;
+  if (isError) return <div className="text-red-400 p-6">Error loading</div>;
+  if (!weeklyFitnessRoutine || !daySchedule)
+    return <div className="text-white p-6">No workout today</div>;
 
   const plan = weeklyFitnessRoutine.plan_snapshot;
 
   /* ------------------------------------------------
-     ACTIONS
+     4. TOGGLE ACTION (Handle Reset)
   ------------------------------------------------- */
   const toggleBlock = (id) => {
-    setBlocks((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, completed: !b.completed } : b)),
-    );
+    setBlocks((prev) => {
+      const newBlocks = prev.map((b) =>
+        b.id === id ? { ...b, completed: !b.completed } : b,
+      );
+
+      if (storageKey) {
+        localStorage.setItem(storageKey, JSON.stringify(newBlocks));
+
+        // 🔄 RESET LOGIC: If unchecking, allow celebration again
+        const currentCompleted = newBlocks.filter((b) => b.completed).length;
+        if (currentCompleted < newBlocks.length && celebrationKey) {
+          localStorage.removeItem(celebrationKey);
+        }
+      }
+      return newBlocks;
+    });
   };
 
   /* ------------------------------------------------
-     UI
+     UI RENDER
   ------------------------------------------------- */
   return (
     <>
@@ -139,36 +168,22 @@ export default function FitnessTab() {
           <div className="fixed inset-0 -z-10">
             <img
               src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover opacity-60"
             />
             <div className="absolute inset-0 bg-black/70" />
           </div>
 
-          {/* Top Bar */}
-          <div className="backdrop-blur bg-white/10 border-b border-white/20">
-            <div className="flex items-center justify-between px-6 py-4">
-              <Menu className="text-white" />
-              <div className="flex items-center gap-2 text-white font-semibold">
-                <Dumbbell className="w-5 h-5" />
-                FitLife
-              </div>
-              <Settings className="text-white" />
-            </div>
-          </div>
-
           {/* Header */}
           <div className="max-w-2xl mx-auto px-6 py-8 text-center">
-            <p className="text-white/70 text-sm">Today's Workout</p>
             <h1 className="text-4xl font-bold text-white">
-              {daySchedule.focus.toUpperCase()} DAY WORKOUT
+              {daySchedule.focus.toUpperCase()}
             </h1>
             <p className="text-white/80 mt-1">
-              {plan.session_duration_min} minutes •{" "}
-              {plan.goal.replace("_", " ")}
+              {plan.session_duration_min} min • {plan.goal.replace("_", " ")}
             </p>
           </div>
 
-          {/* Stats */}
+          {/* Stats Grid */}
           <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto px-6 mb-8">
             {[
               ["Exercises", totalCount],
@@ -184,8 +199,7 @@ export default function FitnessTab() {
               </div>
             ))}
           </div>
-
-          {/* Timeline */}
+          {/* Timeline List */}
           <div className="max-w-2xl mx-auto px-6">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-white">Schedule</h3>
@@ -215,19 +229,21 @@ export default function FitnessTab() {
             </div>
           </div>
 
-          {/* Action */}
-          <div className="max-w-2xl mx-auto px-6 py-10">
-            <Button className="w-full py-6 text-lg font-bold rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500">
-              Start Workout
+          {/* Floating Action Button */}
+          <div className="fixed bottom-6 left-0 right-0 px-6 max-w-2xl mx-auto">
+            <Button className="w-full py-6 text-lg font-bold rounded-2xl bg-gradient-to-r from-orange-500 to-rose-500 shadow-lg shadow-orange-900/20">
+              {progress === 100 ? "Good Job!" : "Start Workout"}
             </Button>
           </div>
         </div>
       )}
 
-      {/* 🔥 Celebration Modal (TOP LEVEL) */}
+      {/* 🎉 Celebration Modal */}
+      {/* FIXED: Added open={true} so the modal knows it's allowed to render */}
       <AnimatePresence>
         {showCelebration && (
           <CelebrationModal
+            open={true}
             onClose={() => setShowCelebration(false)}
             calories={420}
             duration={plan.session_duration_min}
@@ -239,14 +255,11 @@ export default function FitnessTab() {
   );
 }
 
-/* ------------------------------------------------
-   INFO TILE
-------------------------------------------------- */
-function Info({ label, value }) {
+function InfoBox({ label, value }) {
   return (
-    <div className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/20">
-      <p className="text-xs text-white/60">{label}</p>
-      <p className="text-sm font-semibold text-white capitalize">{value}</p>
+    <div className="bg-white/10 backdrop-blur rounded-xl p-4 text-center border border-white/20">
+      <p className="text-2xl font-bold text-white">{value}</p>
+      <p className="text-xs text-white/70">{label}</p>
     </div>
   );
 }
