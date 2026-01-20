@@ -7,6 +7,7 @@ import {
   Dumbbell,
   Sparkles,
   BarChart3,
+  CalendarDays,
 } from "lucide-react";
 import { Button } from "./ui/Button";
 import { useSelector, useDispatch } from "react-redux";
@@ -74,6 +75,7 @@ export function Navbar({ isRoutineCompleted }) {
             {navItem("Home", Home, "/")}
             {navItem("Fitness", Dumbbell, "/fitness")}
             {navItem("AI Planner", Sparkles, "/planner")}
+            {navItem("DayCraft", CalendarDays, "/calendar")}
             {navItem("Dashboard", BarChart3, "/dashboard")}
           </div>
         )}
