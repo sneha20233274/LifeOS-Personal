@@ -63,12 +63,12 @@ export default function FitnessTab() {
   const initializedRef = useRef(false);
 
   const { user } = useSelector((s) => s.auth);
-
+  
   const {
     data: weeklyFitnessRoutine,
     isLoading,
     isError,
-  } = useGetWeeklyFitnessRoutineQuery(user?.user_id);
+  } = useGetWeeklyFitnessRoutineQuery();
 
   const daySchedule = weeklyFitnessRoutine?.schedule?.[todayKey];
 

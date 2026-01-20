@@ -12,6 +12,7 @@ import { tasksApi } from "../services/tasksApi";
 import { subtasksApi } from "../services/subtasksApi";
 import { activitiesApi } from "../services/activitiesApi";
 import { fitnessApi } from "../services/fitnessApi"; 
+import {userApi}  from "../services/userApi"
 
 export const store = configureStore({
   reducer: {
@@ -27,6 +28,7 @@ export const store = configureStore({
     [subtasksApi.reducerPath]: subtasksApi.reducer,
     [activitiesApi.reducerPath]: activitiesApi.reducer, // ✅ ADD
     [fitnessApi.reducerPath]: fitnessApi.reducer,
+    [userApi.reducerPath]: userApi.reducer,
   },
 
   middleware: (defaultMiddleware) =>
@@ -38,7 +40,8 @@ export const store = configureStore({
       tasksApi.middleware,
       subtasksApi.middleware,
       activitiesApi.middleware,
-      fitnessApi.middleware// ✅ ADD
+      fitnessApi.middleware,
+      userApi.middleware// ✅ ADD
     ),
 });
 

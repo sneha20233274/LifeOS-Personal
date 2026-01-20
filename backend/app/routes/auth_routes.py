@@ -7,9 +7,10 @@ from app.dependencies.db import get_db
 from app.schemas.user import UserCreate, UserOut,UserLogin
 from app.schemas.token import TokenOut, TokenRefresh
 from app.crud.user_crud import create_user, get_user_by_email, save_refresh_token, revoke_refresh_token, is_refresh_token_revoked, get_user
-from app.core.security import verify_password, create_access_token, create_refresh_token, decode_token,get_current_user
+from app.core.security import verify_password, create_access_token, create_refresh_token, decode_token,get_current_user,hash_password
 from app.models.refresh_token import RefreshToken
 from app.models.user import User
+from app.schemas.user import ChangePasswordRequest
 
 
 router = APIRouter(tags=["auth"])
@@ -65,24 +66,64 @@ def refresh_token(payload: TokenRefresh, db: Session = Depends(get_db)):
 
 @router.post("/logout", status_code=204)
 def logout(payload: TokenRefresh, db: Session = Depends(get_db)):
+    print("🚪 ===== LOGOUT REQUEST RECEIVED =====")
+
     try:
         decoded = decode_token(payload.refresh_token)
+        print("🔓 Refresh token decoded:", decoded)
+
         jti = decoded.get("jti")
+        user_id = decoded.get("sub")
+
+        print(f"👤 User ID: {user_id}")
+        print(f"🆔 Refresh Token JTI: {jti}")
+
         if jti:
             revoke_refresh_token(db, jti)
-    except JWTError:
-        # invalid / expired token → still succeed
-        pass
+            print("✅ Refresh token successfully revoked in DB")
 
+        else:
+            print("⚠️ No JTI found in token")
+
+    except JWTError as e:
+        print("⚠️ Logout called with invalid/expired refresh token")
+        print("JWT Error:", str(e))
+        print("✅ Still treating logout as successful")
+
+    print("🏁 ===== LOGOUT COMPLETED =====")
     return
 
 
-@router.get("/profile")
-def get_profile(current_user: User = Depends(get_current_user)):
-   return {
-    "user": {
-        "user_id": current_user.user_id,
-        "email": current_user.email_id,
-    }
-}
+@router.post("/change-password")
+def change_password(
+    payload: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # 1️⃣ verify current password
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    # 2️⃣ confirm new password
+    if payload.new_password != payload.confirm_password:
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+
+    # 3️⃣ prevent reuse
+    if verify_password(payload.new_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="New password must be different")
+
+    # 4️⃣ update password
+    current_user.password_hash = hash_password(payload.new_password)
+
+
+    # 5️⃣ revoke all refresh tokens (VERY IMPORTANT)
+    db.query(RefreshToken).filter(
+        RefreshToken.user_id == current_user.user_id
+    ).update({"revoked": True})
+
+    db.commit()
+
+    return {"message": "Password updated successfully"}
+
+
 

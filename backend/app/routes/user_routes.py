@@ -6,9 +6,13 @@ from app.schemas.user import UserOut
 from app.crud.user_crud import get_user
 from app.core.security import decode_token
 from jose import JWTError
-from app.utils.oauth2_scheme  import swagger_bearer_auth
+from app.core.security import get_current_user
+from app.models.user import User
+from app.schemas.user import UserProfileUpdate
 
-router = APIRouter(tags=["users"],dependencies=[Depends(swagger_bearer_auth)])
+router = APIRouter(tags=["Users"])
+
+
 
 def get_current_user_from_bearer(authorization: str | None, db: Session):
     # Expect header Authorization: Bearer <token>
@@ -34,9 +38,66 @@ def get_current_user_from_bearer(authorization: str | None, db: Session):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.get("/account/me", response_model=UserOut)
-def read_current_user(authorization: str | None = Header(None), db: Session = Depends(get_db)):
-    # FastAPI automatically injects header if you name param `authorization: str = Header(None)`
-    # To keep it simple we retrieve from function arg.
-    user = get_current_user_from_bearer(authorization, db)
-    return user
+
+
+
+@router.put("/me")
+def update_my_profile(
+    payload: UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+   if payload.username is not None:
+    # only check uniqueness if username actually changed
+    if payload.username != current_user.username:
+        existing = (
+            db.query(User)
+            .filter(
+                User.username == payload.username,
+                User.user_id != current_user.user_id
+            )
+            .first()
+        )
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already taken")
+
+        current_user.username = payload.username
+
+
+    if payload.first_name is not None:
+        current_user.first_name = payload.first_name
+
+    if payload.middle_name is not None:
+        current_user.middle_name = payload.middle_name
+
+    if payload.last_name is not None:
+        current_user.last_name = payload.last_name
+
+    db.commit()
+    db.refresh(current_user)
+
+    return {
+        "message": "Profile updated successfully",
+        "user": {
+            "user_id": current_user.user_id,
+            "username": current_user.username,
+            "first_name": current_user.first_name,
+            "middle_name": current_user.middle_name,
+            "last_name": current_user.last_name,
+            "email_id": current_user.email_id,
+        },
+    }
+@router.get("/me")
+def get_my_profile(
+    current_user: User = Depends(get_current_user),
+):
+    return {
+        "user_id": current_user.user_id,
+        "username": current_user.username,
+        "first_name": current_user.first_name,
+        "middle_name": current_user.middle_name,
+        "last_name": current_user.last_name,
+        "email_id": current_user.email_id,
+        "timezone": current_user.timezone,
+        "created_at":current_user.created_at
+    } 

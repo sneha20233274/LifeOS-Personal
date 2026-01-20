@@ -17,7 +17,10 @@ export const baseQuery = async (args, api, extraOptions) => {
   let result = await rawBaseQuery(args, api, extraOptions);
 
   // 2️⃣ If access token expired
-  if (result.error?.status === 401) {
+  if (
+  result.error &&
+  [401, 403].includes(result.error.status)
+) {
     const auth = JSON.parse(localStorage.getItem("auth"));
     const refreshToken = auth?.refresh;
 

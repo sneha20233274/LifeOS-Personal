@@ -6,9 +6,8 @@ export const fitnessApi = createApi({
   baseQuery, // ✅ reuse shared baseQuery
   endpoints: (builder) => ({
     getWeeklyFitnessRoutine: builder.query({
-      query: (userId) => ({
+      query: () => ({
         url: "/fitness/weekly-routine",
-        params: { user_id: userId },
       }),
     }),
   }),

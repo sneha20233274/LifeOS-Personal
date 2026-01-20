@@ -13,10 +13,13 @@ import { Button } from "./ui/Button";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout } from "../store/authSlice";
+import { useLogoutMutation } from "../services/authApi";
+
 
 export function Navbar({ isRoutineCompleted }) {
   const { isAuthenticated } = useSelector((s) => s.auth);
   const dispatch = useDispatch();
+   const [logoutApi] = useLogoutMutation();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -112,9 +115,9 @@ export function Navbar({ isRoutineCompleted }) {
 
               {/* Logout */}
               <Button
-                onClick={() => {
-                  dispatch(logout());
-                  navigate("/");
+                onClick={async () => {
+                    await(logoutApi());
+                    navigate("/");
                 }}
                 variant="ghost"
                 className="flex items-center gap-2 text-white hover:bg-white/20"
