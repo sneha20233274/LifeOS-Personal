@@ -6,6 +6,9 @@ import { Dumbbell, Calendar, Menu, Settings, ChevronRight } from "lucide-react";
 import { Button } from "./ui/Button";
 import { TimelineExercise } from "./TimelineExercise";
 import { FitnessIntroAnimation } from "./FitnessIntroAnimation";
+import { useGetWeeklyFitnessRoutineQuery } from "../services/fitnessApi";
+import { useSelector } from "react-redux";
+
 
 /* ------------------------------------------------
    INPUT: WeeklyFitnessRoutine (from backend / LLM)
@@ -16,90 +19,12 @@ import { FitnessIntroAnimation } from "./FitnessIntroAnimation";
 /* ------------------------------------------------
    HELPERS
 ------------------------------------------------- */
-const weeklyFitnessRoutine = {
-  routine_name: "Muscle Gain Push Pull Legs",
-  plan_snapshot: {
-    goal: "muscle_gain",
-    experience_level: "beginner",
-    weekly_frequency: 4,
-    session_duration_min: 80,
-    training_split: "push_pull_legs",
-    intensity: {
-      level: "moderate",
-      rpe_range: [6, 8],
-    },
-    recovery: {
-      sleep_hours: 8,
-      active_recovery: true,
-    },
-  },
-  schedule: {
-    tuesday: {
-      day_label: "Tuesday",
-      focus: "legs",
-      timeline: {
-        "08:00-08:15": {
-          block_type: "warmup",
-          category: "mobility",
-          details: {
-            name: "Warm-up & Stretching",
-            instruction: "Dynamic stretches to prepare muscles",
-          },
-        },
-        "08:15-08:20": {
-          block_type: "break",
-          category: "none",
-          details: null,
-        },
-        "08:20-08:35": {
-          block_type: "exercise",
-          category: "strength",
-          details: {
-            exercise_name: "Dumbbell Squats",
-            sets: 3,
-            reps: 15,
-          },
-        },
-        "08:35-08:45": {
-          block_type: "exercise",
-          category: "strength",
-          details: {
-            exercise_name: "Lunges",
-            sets: 3,
-            reps: 12,
-          },
-        },
-        "08:45-08:50": {
-          block_type: "break",
-          category: "none",
-          details: null,
-        },
-        "08:50-09:05": {
-          block_type: "exercise",
-          category: "strength",
-          details: {
-            exercise_name: "Leg Press",
-            sets: 4,
-            reps: 12,
-          },
-        },
-        "09:05-09:15": {
-          block_type: "cooldown",
-          category: "mobility",
-          details: {
-            name: "Cool Down Stretch",
-            instruction: "Slow static stretching",
-          },
-        },
-      },
-    },
-  },
-};
+
 function getTodayKey() {
-  // return new Date()
-  //   .toLocaleDateString("en-US", { weekday: "long" })
-  //   .toLowerCase();
-  return "tuesday"
+  return new Date()
+    .toLocaleDateString("en-US", { weekday: "long" })
+    .toLowerCase();
+ 
 }
 
 function timelineToBlocks(timeline) {
@@ -125,8 +50,19 @@ export default function FitnessTab() {
   const [blocks, setBlocks] = useState([]);
 
   const todayKey = getTodayKey();
-  const daySchedule = weeklyFitnessRoutine.schedule[todayKey];
 
+  const userId = useSelector((state) => state.auth.user?.id);
+
+  const {
+    data: weeklyFitnessRoutine,
+    isLoading,
+    isError,
+  } = useGetWeeklyFitnessRoutineQuery(userId, {
+    skip: !userId,
+  });
+
+  
+  const daySchedule = weeklyFitnessRoutine.schedule?.[todayKey];
   useEffect(() => {
     if (daySchedule) {
       setBlocks(timelineToBlocks(daySchedule.timeline));
@@ -149,6 +85,20 @@ export default function FitnessTab() {
      DERIVED DISPLAY DATA (LLM FIELDS)
   ------------------------------------------------- */
   const plan = weeklyFitnessRoutine.plan_snapshot;
+    if (isLoading) {
+      return <div className="text-white p-6">Loading workout…</div>;
+    }
+
+    if (isError || !weeklyFitnessRoutine) {
+      return <div className="text-red-400 p-6">Failed to load routine</div>;
+  }
+  
+
+  if (!daySchedule) {
+    return (
+      <div className="text-white p-6">No workout scheduled for today.</div>
+    );
+  }
 
   return (
     <>

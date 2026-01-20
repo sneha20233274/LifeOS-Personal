@@ -8,6 +8,8 @@ import { GoalProposal } from "./GoalProposal";
 import { TaskProposal } from "./TaskProposal";
 import { ActivityProposal } from "./ActivityProposal";
 import { useSubmitProposalsMutation } from "../services/proposalsApi";
+import { FitnessProposal } from "./FitnessProposal";
+
 
 export function ProposalsPage() {
   const location = useLocation();
@@ -93,17 +95,25 @@ export function ProposalsPage() {
   const activities = proposalsState.filter(
     (p) => p.action_type === "log_activity",
   );
+  const fitnessProposal = proposalsState.find(
+    (p) => p.action_type === "create_weekly_fitness_routine",
+  );
+
 
   /* -----------------------------
      PROPOSAL ROOTS (KEY CHANGE)
   ------------------------------ */
-  const proposalRoots = [
-    ...goals.map((g) => ({ type: "goal", data: g })),
-    ...tasks
-      .filter((t) => !t.payload?.goal_id)
-      .map((t) => ({ type: "task", data: t })),
-    ...activities.map((a) => ({ type: "activity", data: a })),
-  ];
+const proposalRoots = [
+  ...(fitnessProposal ? [{ type: "fitness", data: fitnessProposal }] : []),
+
+  ...goals.map((g) => ({ type: "goal", data: g })),
+
+  ...tasks
+    .filter((t) => !t.payload?.goal_id)
+    .map((t) => ({ type: "task", data: t })),
+
+  ...activities.map((a) => ({ type: "activity", data: a })),
+];
 
   /* =============================
      UI
@@ -182,6 +192,14 @@ export function ProposalsPage() {
                       key={root.data.proposal_id}
                       activity={root.data}
                       onUpdate={updateEntity}
+                      onStatusChange={updateStatus}
+                    />
+                  );
+                case "fitness":
+                  return (
+                    <FitnessProposal
+                      key={root.data.proposal_id}
+                      proposal={root.data}
                       onStatusChange={updateStatus}
                     />
                   );
