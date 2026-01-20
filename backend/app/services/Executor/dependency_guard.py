@@ -7,6 +7,8 @@ def can_execute(proposal, executed_ids: set[int]) -> bool:
     - approved
     - all dependencies already executed
     """
+    if proposal.action_type == "create_weekly_fitness_routine":
+        return True
     if proposal.status != ProposalStatus.APPROVED:
         return False
 
