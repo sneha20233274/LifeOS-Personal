@@ -16,7 +16,17 @@ from my_agent.schemas.fitness import (
     CardioDetails,
     MobilityDetails,
 )
+from my_agent.schemas.routine_structure import RoutineStructurerNodeResponse,PlanningDeciderOutput
 from my_agent.schemas.fitness import DayTimelineSkeleton
+from my_agent.tools.date_tools import (
+    get_today_date,
+    add_days_to_date
+)
+
+tools_date = [
+    get_today_date,
+    add_days_to_date
+]
 load_dotenv()
 
 
@@ -36,6 +46,12 @@ base_llm = ChatGroq(
     model="openai/gpt-oss-120b",
     temperature=0.7
 )
+
+plan_mode = ChatGroq(
+    model="openai/gpt-oss-120b",
+    temperature=0.3
+).bind_tools(tools_date).with_structured_output(PlanningDeciderOutput)
+
 aggregation_llm = ChatGroq(
     model="openai/gpt-oss-120b",
     temperature=0.1
@@ -151,4 +167,9 @@ activity_structured_llm = (
 analytics_structured_llm = (
     aggregation_llm
     .with_structured_output(AggregationOutput)
+)
+routine_structurer_llm = (
+    analysis_llm.
+    bind_tools([json]).
+    with_structured_output(RoutineStructurerNodeResponse)
 )

@@ -49,6 +49,9 @@ from my_agent.nodes.activity.activity_create_node import activity_create_node
 from my_agent.nodes.analytics_node.aggregation_node import aggregation_node
 from my_agent.nodes.analytics_node.analysis_node import analysis_node, tools_by_name
 
+from my_agent.nodes.routine.planning_decide_node import planning_decider_node
+from my_agent.nodes.routine.daily_context_builder_node import daily_context_builder_node
+from my_agent.nodes.routine.daily_routine_planner_node import daily_routine_planner_node
 
 # ======================================================
 # ROUTING HELPERS
@@ -165,6 +168,7 @@ graph.add_conditional_edges(
         "task": "task_creator_node",
         "activity_create": "activity_create_node",
         "analytics": "aggregation_node",
+        "scheduling": "planning_decider_node"
     },
 )
 # ---------- GOAL ----------
@@ -192,7 +196,6 @@ graph.add_edge("weekly_focus_node", "day_timeline_skeleton_node")
 graph.add_edge("day_timeline_skeleton_node", "timeslot_detail_node")
 graph.add_edge("timeslot_detail_node", "weekly_routine_assembly_node")
 graph.add_edge("weekly_routine_assembly_node", "proposal_builder")
-
 
 
 graph.add_conditional_edges(
@@ -258,5 +261,13 @@ graph.add_conditional_edges(
 )
 graph.add_edge("tool_node_analytics", "analysis_node")
 
+#-----routine------
+graph.add_node('planning_decider_node',planning_decider_node)
+graph.add_node('daily_context_builder_node',daily_context_builder_node)
+graph.add_node('daily_routine_planner_node',daily_routine_planner_node)
+
+graph.add_edge('planning_decider_node','daily_context_builder_node')
+graph.add_edge('daily_context_builder_node','daily_routine_planner_node')
+graph.add_edge('daily_routine_planner_node','proposal_builder')
 # ---------------- COMPILE ----------------
 chatbot = graph.compile(checkpointer=checkpointer)

@@ -18,6 +18,11 @@ def intent_resolver_node(
     - If goal creation related, respond with 'goal'.
     - If activity logging creation respond with create 'activity_create' (activity logging is behabiour where user wants to save that he did something or he wants to same it as their activity)
     - If it is regarding creating task or subtask not related to fitness or diet, respond with 'task'.
+    -If the user wants to schedule, plan, or organize their day,
+    routine, calendar events, or time blocks
+    (including phrases like "plan my day", "schedule", "routine",
+    "calendar", "meeting", "block time"),
+    respond with 'scheduling'.
     -If it is regarding analytics questions response with 'analytics' or some question requiring data or user activity information or productivity
     - Otherwise, respond with an empty string.
     """
