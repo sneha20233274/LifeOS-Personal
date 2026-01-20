@@ -3,7 +3,7 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
 from app.utils.dictionary_merger import update_dict
 from my_agent.schemas.activity import ActivityCreate
-
+from my_agent.schemas.routine_structure import PlanningDeciderOutput, DailyContext
 
 class ChatState(TypedDict, total=False):
     messages: Annotated[List[BaseMessage], add_messages]
@@ -36,6 +36,9 @@ class ChatState(TypedDict, total=False):
     metric_result: Annotated[Dict[str, Any], update_dict]
     comparison_result: Annotated[Dict[str, Any], update_dict]
    
+    planning_decision: Optional[PlanningDeciderOutput] = None
+    daily_context: Optional[DailyContext] = None
+    routine_structure: Optional[dict] = None
     # loop / control info
     iteration: int
     max_iterations: int

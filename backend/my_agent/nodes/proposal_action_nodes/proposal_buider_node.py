@@ -51,6 +51,27 @@ def proposal_builder_node(state: ChatState):
                         "temp_subtask_key": subtask.temp_subtask_key,
                     }
                 })
+    if state.get("routine_structure"):
+        for event in state["routine_structure"].events:
+            proposals.append({
+                "action_type": "schedule_routine_event",
+                "payload": {
+                    "temp_event_key": event.temp_event_key,
+
+                    "title": event.title,
+                    "description": event.description,
+
+                    "start_time": event.start_time,
+                    "end_time": event.end_time,
+                    "is_all_day": event.is_all_day,
+
+                    "category": event.category,
+                    "priority": event.priority,
+
+                    "location_or_link": event.location_or_link,
+                    "source": event.source,
+                }
+            })
     if state.get("activity_create"):
         for activity in state["activity_create"]:
             proposals.append({

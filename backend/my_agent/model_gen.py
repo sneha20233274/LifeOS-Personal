@@ -49,6 +49,9 @@ from my_agent.nodes.activity.activity_create_node import activity_create_node
 from my_agent.nodes.analytics_node.aggregation_node import aggregation_node
 from my_agent.nodes.analytics_node.analysis_node import analysis_node, tools_by_name
 
+from my_agent.nodes.routine.planning_decide_node import planning_decider_node
+from my_agent.nodes.routine.daily_context_builder_node import daily_context_builder_node
+from my_agent.nodes.routine.daily_routine_planner_node import daily_routine_planner_node
 
 # ======================================================
 # ROUTING HELPERS
@@ -165,6 +168,7 @@ graph.add_conditional_edges(
         "task": "task_creator_node",
         "activity_create": "activity_create_node",
         "analytics": "aggregation_node",
+        "scheduling": "planning_decider_node"
     },
 )
 # ---------- GOAL ----------
@@ -192,7 +196,6 @@ graph.add_edge("weekly_focus_node", "day_timeline_skeleton_node")
 graph.add_edge("day_timeline_skeleton_node", "timeslot_detail_node")
 graph.add_edge("timeslot_detail_node", "weekly_routine_assembly_node")
 graph.add_edge("weekly_routine_assembly_node", "proposal_builder")
-
 
 
 graph.add_conditional_edges(
@@ -258,51 +261,13 @@ graph.add_conditional_edges(
 )
 graph.add_edge("tool_node_analytics", "analysis_node")
 
+#-----routine------
+graph.add_node('planning_decider_node',planning_decider_node)
+graph.add_node('daily_context_builder_node',daily_context_builder_node)
+graph.add_node('daily_routine_planner_node',daily_routine_planner_node)
+
+graph.add_edge('planning_decider_node','daily_context_builder_node')
+graph.add_edge('daily_context_builder_node','daily_routine_planner_node')
+graph.add_edge('daily_routine_planner_node','proposal_builder')
 # ---------------- COMPILE ----------------
 chatbot = graph.compile(checkpointer=checkpointer)
-if __name__ == "__main__":
-    from pprint import pprint
-
-    print("\n===== RUNNING FITNESS FLOW TEST =====\n")
-
-    initial_state: ChatState = {
-        "messages": [
-            HumanMessage(
-                content=(
-                    "I want a muscle gain fitness routine. "
-                    "I train in the morning from 9am to 10am. "
-                    "Monday should be leg day, Tuesday push day, "
-                    "Wednesday rest, Thursday pull day. "
-                    "Include warmup, exercises with sets and reps, "
-                    "breaks between sets, and cooldown."
-                )
-            )
-        ],
-        "intent": "fitness",          # VERY IMPORTANT
-        "iteration": 0,
-        "max_iterations": 2,
-        "approved": False,
-        "requires_execution": False   # prevents DB / proposal execution
-    }
-
-final_state = chatbot.invoke(
-    initial_state,
-    config={
-        "configurable": {
-            "user_id": 1,
-            "thread_id": "fitness_test_thread_7"
-        }
-    }
-)
-
-
-print("\n===== FINAL STATE KEYS =====")
-print(final_state.keys())
-
-print("\n===== WEEKLY FITNESS ROUTINE =====")
-if "weekly_routine" in final_state:
-        pprint(final_state["weekly_routine"])
-else:
-        print("❌ weekly_routine not generated")
-
-print("\n===== DONE =====\n")
