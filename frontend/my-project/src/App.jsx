@@ -13,9 +13,10 @@ import ChatInterface from "./components/ChatInterface";
 import SessionPage from "./components/SessionPage";
 import { CreateSubtask } from "./components/CreateSubtask";
 import { CreateTask } from "./components/CreateTask";
+
 import FitnessTab from "./components/FitnessTab";
 import {WeeklyViewFitness} from "./components/WeeklyViewFitness";
-
+import  Reminder  from "./components/Reminder";
 
 export default function App() {
   return (
@@ -44,6 +45,8 @@ export default function App() {
 
       {/* ROUTES WITHOUT NAVBAR */}
       <Route path="/show-plan" element={<ProposalsPage />} />
+      
+      <Route path = '/calender' element = {<Reminder/>}/>
     </Routes>
   );
 }
