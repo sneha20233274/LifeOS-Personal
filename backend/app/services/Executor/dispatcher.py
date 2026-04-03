@@ -21,6 +21,7 @@ EXECUTORS = {
     "create_task": CreateTaskExecutor(),
     "create_subtask": CreateSubtaskExecutor(),
     "create_weekly_fitness_routine" : CreateFitnessRoutineExecutor()
+    
 
 }
 

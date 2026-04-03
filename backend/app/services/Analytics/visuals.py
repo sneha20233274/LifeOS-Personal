@@ -13,20 +13,38 @@ def category_distribution(aggregated: dict) -> dict:
             for category, value in aggregated.items()
         ]
     }
+# def weekday_comparison(aggregated: dict) -> dict:
+#     """
+#     Converts:
+#     {weekday_int: value}
+#     →
+#     bar chart data
+#     """
+
+#     return {
+#         "type": "weekday_comparison",
+#         "data": [
+#             {"weekday": int(day), "value": round(value, 2)}
+#             for day, value in sorted(aggregated.items())
+#         ]
+#     }
 def weekday_comparison(aggregated: dict) -> dict:
-    """
-    Converts:
-    {weekday_int: value}
-    →
-    bar chart data
-    """
+    safe_data = []
+
+    for day, value in aggregated.items():
+        try:
+            safe_day = int(day)
+        except:
+            continue  # skip invalid values
+
+        safe_data.append({
+            "weekday": safe_day,
+            "value": round(value, 2)
+        })
 
     return {
         "type": "weekday_comparison",
-        "data": [
-            {"weekday": int(day), "value": round(value, 2)}
-            for day, value in sorted(aggregated.items())
-        ]
+        "data": sorted(safe_data, key=lambda x: x["weekday"])
     }
 def time_series(metric_name: str, series: list[tuple]) -> dict:
     """

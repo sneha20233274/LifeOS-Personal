@@ -9,6 +9,7 @@ import {
   BarChart3,
   CalendarDays,
 } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "./ui/Button";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -78,7 +79,7 @@ export function Navbar({ isRoutineCompleted }) {
             {navItem("Home", Home, "/")}
             {navItem("Fitness", Dumbbell, "/fitness")}
             {navItem("AI Planner", Sparkles, "/planner")}
-            {navItem("DayCraft", CalendarDays, "/calendar")}
+            {navItem("DayCraft", CalendarDays, "/calender")}
             {navItem("Dashboard", BarChart3, "/dashboard")}
           </div>
         )}
@@ -116,8 +117,8 @@ export function Navbar({ isRoutineCompleted }) {
               {/* Logout */}
               <Button
                 onClick={async () => {
-                    await(logoutApi());
-                    navigate("/");
+                  await logoutApi();
+                  navigate("/");
                 }}
                 variant="ghost"
                 className="flex items-center gap-2 text-white hover:bg-white/20"

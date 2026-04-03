@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from my_agent.models.action_proposal import ActionProposal, ProposalStatus
 from app.utils.make_json import normalize_payload
+import traceback
 
 def save_proposals(
     db: Session,
@@ -14,22 +15,45 @@ def save_proposals(
     """
     saved = []
 
-    for p in proposals:
-        payload = normalize_payload(p["payload"])
-        proposal = ActionProposal(
-            thread_id=thread_id,
-            user_id=user_id,
-            action_type=p["action_type"],
-            payload=payload ,
-            status=ProposalStatus.PENDING
-        )
+    print(f"[DEBUG] save_proposals called with thread_id={thread_id}, user_id={user_id}, proposals={len(proposals)}")
 
-        db.add(proposal)
-        saved.append(proposal)
+    for idx, p in enumerate(proposals):
+        try:
+            print(f"[DEBUG] Processing proposal #{idx}: {p}")
 
-    db.commit()
+            payload = normalize_payload(p["payload"])
+            proposal = ActionProposal(
+                thread_id=thread_id,
+                user_id=user_id,
+                action_type=p.get("action_type", "UNKNOWN"),
+                payload=payload,
+                status=ProposalStatus.PENDING
+            )
 
-    for p in saved:
-        db.refresh(p)
+            print(f"[DEBUG] Adding proposal to session: {proposal}")
+            db.add(proposal)
+            saved.append(proposal)
+        except Exception as e:
+            print(f"[ERROR] Failed to process proposal #{idx}: {e}")
+            traceback.print_exc()
 
+    try:
+        print("[DEBUG] Committing DB session...")
+        db.commit()
+        print("[DEBUG] DB commit successful!")
+    except Exception as e:
+        print(f"[ERROR] DB commit failed: {e}")
+        traceback.print_exc()
+        db.rollback()
+        print("[DEBUG] DB session rolled back due to commit error.")
+
+    for idx, p in enumerate(saved):
+        try:
+            db.refresh(p)
+            print(f"[DEBUG] Refreshed proposal #{idx}: {p}")
+        except Exception as e:
+            print(f"[ERROR] Failed to refresh proposal #{idx}: {e}")
+            traceback.print_exc()
+
+    print(f"[DEBUG] Returning {len(saved)} saved proposals")
     return saved

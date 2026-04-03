@@ -8,7 +8,6 @@ def run_analytics(
     user_id: int,
     request: AnalyticsRequest,
 ):
-    # IMPORTANT: user isolation happens here
     return aggregate_activities(
         db=db,
         filters=request.filters,

@@ -15,7 +15,7 @@ import { categoryConfigs } from "../app/categoryConfig";
 export function ActivityProposal({ activity, onUpdate, onStatusChange }) {
   const [isEditing, setIsEditing] = useState(false);
 
-  /* 🔑 Normalize backend → UI */
+
   const [localPayload, setLocalPayload] = useState(() => ({
     ...activity.payload,
     summary_category: Array.isArray(activity.payload.summary_category)
@@ -58,7 +58,17 @@ export function ActivityProposal({ activity, onUpdate, onStatusChange }) {
   };
 
   const save = () => {
-    onUpdate(activity.proposal_id, localPayload);
+    const payloadToSend = {
+      ...localPayload,
+      start_ts: localPayload.start_ts
+        ? new Date(localPayload.start_ts).toISOString()
+        : null,
+      end_ts: localPayload.end_ts
+        ? new Date(localPayload.end_ts).toISOString()
+        : null,
+    };
+
+    onUpdate(activity.proposal_id, payloadToSend);
     setIsEditing(false);
   };
 

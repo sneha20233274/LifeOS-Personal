@@ -3,6 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import chatReducer from "../store/chatSlice";
 import appReducer from "../store/appSlice";
 import authReducer, { loadFromStorage } from "../store/authSlice";
+import { analyticsApi } from "../services/analyticsApi";
 
 import { authApi } from "../services/authApi";
 import { proposalsApi } from "../services/proposalsApi";
@@ -29,6 +30,7 @@ export const store = configureStore({
     [activitiesApi.reducerPath]: activitiesApi.reducer, // ✅ ADD
     [fitnessApi.reducerPath]: fitnessApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
+    [analyticsApi.reducerPath]: analyticsApi.reducer,
   },
 
   middleware: (defaultMiddleware) =>
@@ -41,6 +43,7 @@ export const store = configureStore({
       subtasksApi.middleware,
       activitiesApi.middleware,
       fitnessApi.middleware,
+      analyticsApi.middleware,
       userApi.middleware// ✅ ADD
     ),
 });

@@ -9,7 +9,7 @@ export const activitiesApi = createApi({
   endpoints: (builder) => ({
     getActivities: builder.query({
       query: () => ({
-        url: "/activities",
+        url: "/activities/",
         method: "GET",
       }),
     }),

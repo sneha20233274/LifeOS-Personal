@@ -71,7 +71,11 @@ export default function FitnessTab() {
   } = useGetWeeklyFitnessRoutineQuery();
 
   const daySchedule = weeklyFitnessRoutine?.schedule?.[todayKey];
-
+  console.log("todayKey:", todayKey);
+  console.log(
+    "schedule keys:",
+    Object.keys(weeklyFitnessRoutine?.schedule || {}),
+  );
   const storageKey = user ? `fitness_data_${user.user_id}_${dateString}` : null;
   const celebrationKey = user
     ? `fitness_celebrated_${user.user_id}_${dateString}`
