@@ -161,11 +161,9 @@ export default function Sidebar() {
         </div>
         {!collapsed && (
           <div>
-            <p className="font-medium text-sm">
-              {user?.name || user?.username || "User"}
-            </p>
+            <p className="font-medium text-sm">{user?.username || "User"}</p>
             <p className="text-xs text-slate-400">
-              {user?.email || "No email"}
+              {user?.email_id || "No email"}
             </p>
           </div>
         )}

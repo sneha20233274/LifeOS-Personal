@@ -9,7 +9,12 @@ import { loadFromStorage } from "./store/authSlice";
 const savedAuth = localStorage.getItem("auth");
 
 if (savedAuth) {
-  store.dispatch(loadFromStorage(JSON.parse(savedAuth)));
+  try {
+    store.dispatch(loadFromStorage(JSON.parse(savedAuth)));
+  } catch (err) {
+    console.error(err);
+    localStorage.removeItem("auth");
+  }
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -17,5 +22,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <App />
     </BrowserRouter>
-  </Provider>
+  </Provider>,
 );
