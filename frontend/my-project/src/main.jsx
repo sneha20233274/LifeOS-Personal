@@ -4,6 +4,13 @@ import { store } from "./app/store";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
+import { loadFromStorage } from "./store/authSlice";
+
+const savedAuth = localStorage.getItem("auth");
+
+if (savedAuth) {
+  store.dispatch(loadFromStorage(JSON.parse(savedAuth)));
+}
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>

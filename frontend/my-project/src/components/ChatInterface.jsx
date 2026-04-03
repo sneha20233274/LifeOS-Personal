@@ -60,15 +60,15 @@ export default function ChatInterface() {
       }).unwrap();
 
       // 3️⃣ Handle interrupt (proposals)
-     if (result.status === "WAITING_FOR_APPROVAL") {
-       navigate("/show-plan", {
-         state: {
-           proposals: result.proposals,
-           thread_id: result.thread_id,
-         },
-       });
-       return;
-     }
+      if (result.status === "WAITING_FOR_APPROVAL") {
+        navigate("/show-plan", {
+          state: {
+            proposals: result.proposals,
+            thread_id: result.thread_id,
+          },
+        });
+        return;
+      }
 
       // 4️⃣ Handle completed chat
       if (result.messages?.length) {
@@ -95,8 +95,10 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50">
-      <div className="flex-1 overflow-y-auto p-8 space-y-4">
+    <div className="flex-1 flex flex-col bg-slate-50 w-full overflow-hidden">
+    
+      {/* MESSAGES */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 w-full">
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} isBot={m.sender === "bot"} />
         ))}
@@ -107,17 +109,20 @@ export default function ChatInterface() {
             <span className="text-sm font-medium">Thinking...</span>
           </div>
         )}
+
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="border-t bg-white p-4">
+      {/* INPUT */}
+      <div className="border-t bg-white p-3 w-full">
         <SuggestionBar />
 
-        <div className="mt-3 flex gap-3 items-center">
+        <div className="mt-3 flex items-center gap-2 w-full">
+        
+          {/* FILE BUTTON */}
           <button
             onClick={handlePlusClick}
-            className="p-3 bg-slate-100 rounded-xl hover:bg-slate-200"
+            className="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 shrink-0"
           >
             <Plus size={18} />
           </button>
@@ -130,6 +135,7 @@ export default function ChatInterface() {
             accept=".pdf,.doc,.docx,.txt"
           />
 
+          {/* INPUT FIELD */}
           <input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -137,13 +143,14 @@ export default function ChatInterface() {
               e.key === "Enter" && !e.shiftKey && handleSendMessage(inputValue)
             }
             placeholder="Type a message..."
-            className="flex-1 p-3 bg-slate-100 rounded-xl outline-none"
+            className="flex-1 min-w-0 p-2 bg-slate-100 rounded-lg outline-none"
           />
 
+          {/* SEND BUTTON */}
           <button
             onClick={() => handleSendMessage(inputValue)}
             disabled={!inputValue.trim() || isLoading}
-            className="p-3 bg-indigo-600 text-white rounded-xl"
+            className="p-2 bg-indigo-600 text-white rounded-lg shrink-0"
           >
             <Send size={18} />
           </button>

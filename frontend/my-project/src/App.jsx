@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
+import AppLayout from "./components/AppLayout"; // 👈 ADD THIS
 
 import MainPage from "./components/MainPage";
 import { LoginPage } from "./components/LoginPage";
@@ -15,13 +16,14 @@ import { CreateSubtask } from "./components/CreateSubtask";
 import { CreateTask } from "./components/CreateTask";
 
 import FitnessTab from "./components/FitnessTab";
-import {WeeklyViewFitness} from "./components/WeeklyViewFitness";
-import  Reminder  from "./components/Reminder";
+import { WeeklyViewFitness } from "./components/WeeklyViewFitness";
+import Reminder from "./components/Reminder";
 import Profile from "./components/Profile";
+
 export default function App() {
   return (
     <Routes>
-      {/* ROUTES WITH NAVBAR */}
+      {/* 🌐 NORMAL PAGES (Navbar only) */}
       <Route element={<Layout />}>
         <Route path="/" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -29,7 +31,6 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/goals" element={<GoalsPage />} />
 
-        {/* SAME PAGE – DIFFERENT CONTEXT */}
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/goals/:goalId/tasks" element={<TasksPage />} />
         <Route path="/tasks/:taskId/subtasks" element={<SubtasksPage />} />
@@ -37,17 +38,20 @@ export default function App() {
         <Route path="/goals/:goalId/tasks/new" element={<CreateTask />} />
         <Route path="/tasks/:taskId/subtasks/new" element={<CreateSubtask />} />
 
-        <Route path="/planner" element={<SessionPage />} />
-        <Route path="/session/:threadId" element={<ChatInterface />} />
         <Route path="/fitness" element={<FitnessTab />} />
         <Route path="/fitness/week" element={<WeeklyViewFitness />} />
-        <Route path="/profile" element={<Profile/>}/>
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/calender" element={<Reminder />} />
+
+        {/* ✅ FIX: include this here */}
+        <Route path="/show-plan" element={<ProposalsPage />} />
       </Route>
 
-      {/* ROUTES WITHOUT NAVBAR */}
-      <Route path="/show-plan" element={<ProposalsPage />} />
-      
-      <Route path = '/calender' element = {<Reminder/>}/>
+      {/* 🤖 AI PLANNER (Sidebar + Navbar) */}
+      <Route element={<AppLayout />}>
+        <Route path="/planner" element={<SessionPage />} />
+        <Route path="/session/:threadId" element={<ChatInterface />} />
+      </Route>
     </Routes>
   );
 }
