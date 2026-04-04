@@ -105,10 +105,9 @@ export default function ChatInterface() {
  };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 w-full overflow-hidden">
-    
+    <div className="flex-1 flex flex-col bg-slate-50 w-full overflow-hidden h-full">
       {/* MESSAGES */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 w-full">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 w-full h-0">
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} isBot={m.sender === "bot"} />
         ))}
@@ -128,7 +127,6 @@ export default function ChatInterface() {
         <SuggestionBar />
 
         <div className="mt-3 flex items-center gap-2 w-full">
-        
           {/* FILE BUTTON */}
           <button
             onClick={handlePlusClick}
@@ -149,9 +147,11 @@ export default function ChatInterface() {
           <input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) =>
-              e.key === "Enter" && !e.shiftKey && handleSendMessage(inputValue)
-            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !isLoading) {
+                handleSendMessage(inputValue);
+              }
+            }}
             placeholder="Type a message..."
             className="flex-1 min-w-0 p-2 bg-slate-100 rounded-lg outline-none"
           />
