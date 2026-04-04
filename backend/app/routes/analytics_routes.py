@@ -12,7 +12,16 @@ from app.controllers.analytics_controller import run_analytics
 from app.services.Analytics.metrics import compute_productivity
 from app.services.Analytics.visuals import weekday_comparison
 from app.services.Analytics.comparison import rolling_average
+from app.services.Analytics.insights import generate_insights
+from app.services.Analytics.primitives import AggregationSpec
+from app.services.Analytics.aggregation import aggregate_activities
+# app/schemas/insights.py
 
+from pydantic import BaseModel
+from app.services.Analytics.primitives import ActivityFilters
+
+class InsightsRequest(BaseModel):
+    filters: ActivityFilters
 
 router = APIRouter(tags=["Analytics"])
 
@@ -86,6 +95,49 @@ def productivity_trend(payload: AnalyticsRequest, db: Session = Depends(get_db),
             continue
 
     return { "data": sorted(formatted, key=lambda x: x["day"]) }
+
+ 
+
+@router.post("/insights")
+def get_insights(
+    payload: InsightsRequest,
+    db: Session = Depends(get_db),
+    user = Depends(get_current_user), 
+):
+    
+    user_id = user.user_id  
+
+    category = aggregate_activities(
+        db,
+        user_id,
+        payload.filters,
+        AggregationSpec(
+            group_by="summary_category",
+            aggregation="sum",
+            field="duration_minutes"
+        )
+    )
+
+    weekday = aggregate_activities(
+        db,
+        user_id,
+        payload.filters,
+        AggregationSpec(
+            group_by="day_of_week",
+            aggregation="sum",
+            field="duration_minutes"
+        )
+    )
+
+    productivity = compute_productivity(category)
+
+    insights = generate_insights(
+        category,
+        weekday,
+        [productivity]
+    )
+
+    return {"insights": insights}
 
 @router.get("/summaries/daily")
 def get_daily_summary(

@@ -8,6 +8,7 @@ import {
   useGetWeeklyMutation,
   useGetTrendMutation,
   useGetProductivityAverageMutation,
+  useGetInsightsMutation, // ✅ ADD THIS
 } from "../services/analyticsApi";
 import { Badge } from "./ui/badge";
 import { ScrollArea } from "./ui/scroll-area";
@@ -67,6 +68,7 @@ const [getTrend, { data: trendApiData }] = useGetTrendMutation();
 const [getProductivityAverage, { data: avgData }] =
   useGetProductivityAverageMutation();
   const { data: rawActivities = [] } = useGetActivitiesQuery();
+  const [getInsights, { data: insightsData }] = useGetInsightsMutation();
   console.log("categoryData", categoryData);
   console.log("productivityData", productivityData);
   console.log("weeklyApiData", weeklyApiData);
@@ -127,6 +129,10 @@ useEffect(() => {
   getWeekly(weeklyPayload);
   getTrend(weeklyPayload);
   getProductivityAverage(avgPayload);
+
+   getInsights({
+     filters,
+   });
 }, []);
    
   const isLoading =
@@ -224,21 +230,25 @@ const productivityTrend = (trendApiData?.data || []).map((item) => ({
   console.log("productivityTrend", productivityTrend);
   console.log("wastedInvestedData", wastedInvestedData);
 
-  const insights = [
-    {
-      icon: Calendar,
-      text: "You are most productive on Tuesdays.",
-      trend: "up",
-    },
-    { icon: Clock, text: "Your productivity drops after 9 PM.", trend: "down" },
-    { icon: Zap, text: "Coding gives you highest focus score.", trend: "up" },
-    {
-      icon: TrendingUp,
-      text: "Entertainment time increased 18% this week.",
-      trend: "neutral",
-    },
-  ];
+  const insights = insightsData?.insights || [];
+  const mappedInsights = insights.map((insight) => {
+  let icon = Brain;
+  let trend = "neutral";
 
+  if (insight.type === "positive" || insight.type === "improving") {
+    icon = TrendingUp;
+    trend = "up";
+  } else if (insight.type === "warning" || insight.type === "declining") {
+    icon = TrendingDown;
+    trend = "down";
+  }
+
+  return {
+    icon,
+    text: insight.text,
+    trend,
+  };
+});
   const COLORS = [
     "#8b5cf6",
     "#3b82f6",
@@ -762,7 +772,7 @@ const productivityTrend = (trendApiData?.data || []).map((item) => ({
                 </div>
               </div>
               <div className="space-y-3">
-                {insights.map((insight, index) => {
+                {mappedInsights.map((insight, index) => {
                   const Icon = insight.icon;
                   return (
                     <motion.div

@@ -8,11 +8,14 @@ import { useRef, useEffect, useState } from "react";
 import { useRunChatMutation } from "../services/chatApi";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { setSession } from "../store/chatSlice";
 
 export default function ChatInterface() {
   const dispatch = useDispatch();
   const { uploadFile } = useFileUpload();
-
+  const { threadId } = useParams();
+ 
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
   const navigate = useNavigate();
@@ -22,7 +25,11 @@ export default function ChatInterface() {
   const { messages, activeSessionId } = useSelector((s) => s.chat);
 
   const [runChat, { isLoading }] = useRunChatMutation();
-
+  useEffect(() => {
+    if (threadId) {
+      dispatch(setSession(threadId)); // 🔥 FIX
+    }
+  }, [threadId, dispatch]);
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
@@ -39,27 +46,31 @@ export default function ChatInterface() {
   };
 
   const handleSendMessage = async (text) => {
-    if (!text.trim() || isLoading || !activeSessionId) return;
+    if (!text.trim() || isLoading) return;
 
-    // 1️⃣ Add user message
+    const currentThread = activeSessionId || threadId;
+
+    if (!currentThread) {
+      console.error("No session found");
+      return;
+    }
+
     dispatch(
       addMessage({
-        id: Date.now(),
+        id: Date.now() + Math.random(),
         sender: "user",
         text,
-      })
+      }),
     );
 
     setInputValue("");
 
     try {
-      // 2️⃣ Call backend /chat/run
       const result = await runChat({
-        thread_id: activeSessionId,
+        thread_id: currentThread,
         prompt: text,
       }).unwrap();
 
-      // 3️⃣ Handle interrupt (proposals)
       if (result.status === "WAITING_FOR_APPROVAL") {
         navigate("/show-plan", {
           state: {
@@ -70,7 +81,6 @@ export default function ChatInterface() {
         return;
       }
 
-      // 4️⃣ Handle completed chat
       if (result.messages?.length) {
         result.messages.forEach((msg) => {
           dispatch(
@@ -78,7 +88,7 @@ export default function ChatInterface() {
               id: Date.now() + Math.random(),
               sender: "bot",
               text: msg.content,
-            })
+            }),
           );
         });
       }
@@ -86,13 +96,13 @@ export default function ChatInterface() {
       console.error("Chat run failed", err);
       dispatch(
         addMessage({
-          id: Date.now() + 1,
+          id: Date.now() + Math.random(),
           sender: "bot",
           text: "Something went wrong. Please try again.",
-        })
+        }),
       );
     }
-  };
+ };
 
   return (
     <div className="flex-1 flex flex-col bg-slate-50 w-full overflow-hidden">
