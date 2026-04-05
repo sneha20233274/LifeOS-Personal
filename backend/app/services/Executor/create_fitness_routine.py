@@ -40,9 +40,9 @@ class CreateFitnessRoutineExecutor:
         db.commit()
 
         return {
+            "status": "success",
             "data": {
                 "routine_id": payload["routine_id"],
-                "status": "stored"
             }
         }
        

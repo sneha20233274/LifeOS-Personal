@@ -3,7 +3,7 @@ import { baseQuery } from "./baseQuery";
 
 export const fitnessApi = createApi({
   reducerPath: "fitnessApi",
-  baseQuery, // ✅ reuse shared baseQuery
+  baseQuery, 
   endpoints: (builder) => ({
     getWeeklyFitnessRoutine: builder.query({
       query: () => ({

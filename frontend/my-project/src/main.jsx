@@ -3,6 +3,7 @@ import { Provider } from "react-redux";
 import { store } from "./app/store";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import { Toaster } from "react-hot-toast";
 import "./index.css";
 import { loadFromStorage } from "./store/authSlice";
 import AuthInitializer from "./components/AuthInitializer";
@@ -25,5 +26,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <App />
       </AuthInitializer>
     </BrowserRouter>
-  </Provider>,
+  </Provider>
 );

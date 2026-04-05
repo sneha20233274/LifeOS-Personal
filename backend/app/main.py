@@ -42,8 +42,9 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Routine Planner")
 @app.on_event("startup")
 def startup_event():
+    print("🚀 Scheduler starting...")
     start_scheduler()
-
+    print("✅ Scheduler started")
 
 app.add_middleware(
     CORSMiddleware,
@@ -64,7 +65,7 @@ app.include_router(analytics_routes.router, prefix="/analytics")
 app.include_router(proposal_routes.router, prefix="/proposals")
 app.include_router(agent_routes.router, prefix="/agent")
 app.include_router(chat_routes.router, prefix="/chat")
-app.include_router(routine_event_routes.router , prefix='/routine-events')
+app.include_router(routine_event_routes.router , prefix='/events')
 app.include_router(reminder_routes.router)
 app.include_router(fitness.router,prefix="/fitness")
 app.include_router(google_auth.router , prefix='/integrations/google')

@@ -43,6 +43,7 @@ class RoutineEvent(Base):
         default=datetime.utcnow,
         onupdate=datetime.utcnow
     )
+    reminders = relationship("Reminder", back_populates="routine_event")
 
     # Optional ORM relationship (not required yet)
     user = relationship("User", back_populates="routine_events")

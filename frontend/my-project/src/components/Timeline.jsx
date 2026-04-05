@@ -14,7 +14,8 @@ const TimelineItem = ({ event, isLast, onToggleReminder, onDelete, onToggleStatu
   // 1. Format Time
   const formatTime = (isoString) => {
     if (!isoString) return '';
-    const date = new Date(isoString);
+    const date = new Date(isoString.endsWith("Z") ? isoString : isoString + "Z");
+
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -41,6 +42,8 @@ const TimelineItem = ({ event, isLast, onToggleReminder, onDelete, onToggleStatu
       default: return 'border-l-4 border-l-gray-300';
     }
   };
+  console.log(event.has_reminder
+, event.has_reminder);
 
   return (
     <div className={`flex w-full min-h-[90px] group ${isCompleted ? 'opacity-70' : ''}`}>
@@ -101,7 +104,8 @@ const TimelineItem = ({ event, isLast, onToggleReminder, onDelete, onToggleStatu
                 
                 {/* 1. Complete / Undo Button */}
                 <button 
-                  onClick={() => onToggleStatus && onToggleStatus(event.id)}
+                  onClick={() => onToggleStatus && onToggleStatus(event.id, event.status)
+}
                   className={`p-1.5 rounded-full transition-colors ${
                     isCompleted 
                       ? 'text-green-500 hover:bg-green-50' 
@@ -114,15 +118,18 @@ const TimelineItem = ({ event, isLast, onToggleReminder, onDelete, onToggleStatu
 
                 {/* 2. Reminder Button */}
                 <button 
-                  onClick={() => onToggleReminder && onToggleReminder(event.id)}
+                  onClick={() => onToggleReminder && onToggleReminder(event.id, event.has_reminder
+)}
                   className={`p-1.5 rounded-full transition-colors ${
-                    event.hasReminder 
+                    event.has_reminder
+ 
                       ? 'text-[#F49F99] hover:bg-red-50' 
                       : 'text-gray-300 hover:text-[#F49F99] hover:bg-red-50'
                   }`}
                   title="Toggle Reminder"
                 >
-                  {event.hasReminder ? <Bell className="w-4 h-4 fill-current" /> : <BellOff className="w-4 h-4" />}
+                  {event.has_reminder
+ ? <Bell className="w-4 h-4 fill-current" /> : <BellOff className="w-4 h-4" />}
                 </button>
 
                 {/* 3. Delete Button */}
@@ -182,7 +189,7 @@ export default function Timeline({
        
        <div className="max-w-3xl mx-auto mt-6">
          {events && events.length > 0 ? (
-           events
+          [...events]
              .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
              .map((event, index) => (
                 <TimelineItem 

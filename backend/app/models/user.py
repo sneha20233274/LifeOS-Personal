@@ -30,15 +30,13 @@ class User(Base):
         back_populates="user",
         cascade="all, delete"
     )
-    routine_events = relationship(
-        "RoutineEvent",
+    
+    reminders = relationship(
+        "Reminder",
         back_populates="user",
         cascade="all, delete"
     )
-    reminders = relationship(
-        "Reminder",
-        cascade="all, delete"
-    )
+
     google_token = relationship(
         "GoogleToken",
         back_populates="user",
