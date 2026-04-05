@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 import { loadFromStorage } from "./store/authSlice";
+import AuthInitializer from "./components/AuthInitializer";
 
 const savedAuth = localStorage.getItem("auth");
 
@@ -20,7 +21,9 @@ if (savedAuth) {
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <BrowserRouter>
-      <App />
+      <AuthInitializer>
+        <App />
+      </AuthInitializer>
     </BrowserRouter>
   </Provider>,
 );
