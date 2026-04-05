@@ -1,4 +1,3 @@
-// store/authSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
@@ -15,12 +14,21 @@ const authSlice = createSlice({
     setCredentials: (state, action) => {
       const { user, access, refresh } = action.payload;
 
-      state.user = user;
+      // ✅ DO NOT overwrite user if not provided
+      state.user = user ?? state.user;
       state.accessToken = access;
       state.refreshToken = refresh;
       state.isAuthenticated = true;
 
-      localStorage.setItem("auth", JSON.stringify(action.payload));
+      // ✅ ALWAYS store consistent structure
+      localStorage.setItem(
+        "auth",
+        JSON.stringify({
+          user: state.user,
+          access,
+          refresh,
+        })
+      );
     },
 
     logout: (state) => {
@@ -33,12 +41,12 @@ const authSlice = createSlice({
     },
 
     loadFromStorage: (state, action) => {
-      const { user, access, refresh } = action.payload;
+      const { user, access, refresh } = action.payload || {};
 
-      state.user = user;
-      state.accessToken = access;
-      state.refreshToken = refresh;
-      state.isAuthenticated = !!user;
+      state.user = user || null;
+      state.accessToken = access || null;
+      state.refreshToken = refresh || null;
+      state.isAuthenticated = !!access;
     },
   },
 });

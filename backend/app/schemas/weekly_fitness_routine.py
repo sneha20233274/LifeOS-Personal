@@ -11,7 +11,7 @@ class RoutineStatus(str, Enum):
 
 class WeeklyFitnessRoutineResponse(BaseModel):
     routine_id: str
-    user_id: str
+    user_id: int
     routine_name: str
 
     # 🔥 EXACT LLM OUTPUT — DO NOT TRANSFORM

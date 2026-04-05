@@ -26,15 +26,17 @@ def save_refresh_token(db: Session, jti: str, token: str, user_id: int, expires_
     db.commit()
     db.refresh(rt)
     return rt
+def revoke_refresh_token(db: Session, jti: str) -> None:
+    db.query(RefreshToken).filter(
+        RefreshToken.jti == jti,
+        RefreshToken.revoked == False
+    ).update({"revoked": True})
+    db.commit()
 
-def revoke_refresh_token(db: Session, jti: str):
-    rt = db.query(RefreshToken).filter(RefreshToken.jti == jti).first()
-    if rt:
-        rt.revoked = True
-        db.add(rt)
-        db.commit()
-    return rt
 
 def is_refresh_token_revoked(db: Session, jti: str) -> bool:
-    rt = db.query(RefreshToken).filter(RefreshToken.jti == jti).first()
-    return (rt is None) or rt.revoked
+    rt = db.query(RefreshToken).filter(
+        RefreshToken.jti == jti
+    ).first()
+
+    return rt is None or rt.revoked

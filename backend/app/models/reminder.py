@@ -1,8 +1,5 @@
 from datetime import datetime
-from sqlalchemy import (
-    Column, Integer, DateTime, String,
-    ForeignKey
-)
+from sqlalchemy import Column, Integer, DateTime, String, ForeignKey
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -40,6 +37,13 @@ class Reminder(Base):
         onupdate=datetime.utcnow
     )
 
-    # ORM relationships (optional but useful)
-    routine_event = relationship("RoutineEvent")
-    user = relationship("User")
+    # ORM relationships
+    user = relationship(
+        "User",
+        back_populates="reminders"
+    )
+
+    routine_event = relationship(
+        "RoutineEvent",
+        back_populates="reminders"
+    )

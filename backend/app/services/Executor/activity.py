@@ -25,7 +25,9 @@ class LogActivityExecutor(BaseExecutor):
             start_ts=payload.get("start_ts"),
             end_ts=payload.get("end_ts"),
             duration_minutes=payload["duration_minutes"],
-            summary_category=payload["summary_category"],
+            summary_category=payload["summary_category"][0]
+            if isinstance(payload["summary_category"], list)
+            else payload["summary_category"],
             subtask_id=payload.get("subtask_id"),
             source="executor",
         )

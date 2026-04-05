@@ -52,13 +52,17 @@ No text. No markdown. No commentary.
 import json
 
 def build_daily_routine_planner_human_message(daily_context, user_prompt):
+    # ✅ Handle both dict and pydantic
+    if hasattr(daily_context, "model_dump"):
+        daily_context = daily_context.model_dump()
+
     return HumanMessage(
         content=f"""
 User request:
 {user_prompt}
 
 Daily context (facts, not decisions):
-{json.dumps(daily_context.model_dump(), default=str)}
+{json.dumps(daily_context, default=str)}
 """
     )
 
@@ -69,18 +73,27 @@ from langchain_core.output_parsers import PydanticOutputParser
 from my_agent.llm import routine_structurer_llm 
 from my_agent.chatstate import ChatState
 
-def daily_routine_planner_node(state:ChatState) -> ChatState:
+
+def daily_routine_planner_node(state: dict) -> dict:
     """
     Merged planner + structurer node.
-    Outputs final RoutineStructurerNodeResponse.
     """
 
+    # ✅ SAFE ACCESS
+    daily_context = state.get("daily_context")
+    if not daily_context:
+        raise ValueError("daily_context missing in state")
+
+    # ✅ CORRECT WAY TO GET USER PROMPT
+    user_prompt = state["messages"][-1].content
+
+    # ✅ LLM CALL
     response = routine_structurer_llm.invoke(
         [
             DAILY_ROUTINE_PLANNER_SYSTEM_MESSAGE,
             build_daily_routine_planner_human_message(
-                daily_context=state.daily_context,
-                user_prompt=state.user_prompt
+                daily_context=daily_context,
+                user_prompt=user_prompt
             )
         ]
     )

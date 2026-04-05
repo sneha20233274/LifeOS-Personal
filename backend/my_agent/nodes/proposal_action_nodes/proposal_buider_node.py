@@ -43,7 +43,6 @@ def proposal_builder_node(state: ChatState):
                         "target_value": subtask.target_value,
                         "weight": subtask.weight,
                         "deadline": subtask.deadline,
-                        # 🔥 THIS IS WHAT YOU ASKED FOR
                         "depends_on_task_key": task_key,
                         "depends_on_subtask_key":subtask.depends_on_subtask_key,
 

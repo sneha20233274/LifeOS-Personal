@@ -8,11 +8,14 @@ import { useRef, useEffect, useState } from "react";
 import { useRunChatMutation } from "../services/chatApi";
 import { useFileUpload } from "../hooks/useFileUpload";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { setSession } from "../store/chatSlice";
 
 export default function ChatInterface() {
   const dispatch = useDispatch();
   const { uploadFile } = useFileUpload();
-
+  const { threadId } = useParams();
+ 
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
   const navigate = useNavigate();
@@ -22,7 +25,11 @@ export default function ChatInterface() {
   const { messages, activeSessionId } = useSelector((s) => s.chat);
 
   const [runChat, { isLoading }] = useRunChatMutation();
-
+  useEffect(() => {
+    if (threadId) {
+      dispatch(setSession(threadId)); // 🔥 FIX
+    }
+  }, [threadId, dispatch]);
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
@@ -39,38 +46,41 @@ export default function ChatInterface() {
   };
 
   const handleSendMessage = async (text) => {
-    if (!text.trim() || isLoading || !activeSessionId) return;
+    if (!text.trim() || isLoading) return;
 
-    // 1️⃣ Add user message
+    const currentThread = activeSessionId || threadId;
+
+    if (!currentThread) {
+      console.error("No session found");
+      return;
+    }
+
     dispatch(
       addMessage({
-        id: Date.now(),
+        id: Date.now() + Math.random(),
         sender: "user",
         text,
-      })
+      }),
     );
 
     setInputValue("");
 
     try {
-      // 2️⃣ Call backend /chat/run
       const result = await runChat({
-        thread_id: activeSessionId,
+        thread_id: currentThread,
         prompt: text,
       }).unwrap();
 
-      // 3️⃣ Handle interrupt (proposals)
-     if (result.status === "WAITING_FOR_APPROVAL") {
-       navigate("/show-plan", {
-         state: {
-           proposals: result.proposals,
-           thread_id: result.thread_id,
-         },
-       });
-       return;
-     }
+      if (result.status === "WAITING_FOR_APPROVAL") {
+        navigate("/show-plan", {
+          state: {
+            proposals: result.proposals,
+            thread_id: result.thread_id,
+          },
+        });
+        return;
+      }
 
-      // 4️⃣ Handle completed chat
       if (result.messages?.length) {
         result.messages.forEach((msg) => {
           dispatch(
@@ -78,7 +88,7 @@ export default function ChatInterface() {
               id: Date.now() + Math.random(),
               sender: "bot",
               text: msg.content,
-            })
+            }),
           );
         });
       }
@@ -86,17 +96,18 @@ export default function ChatInterface() {
       console.error("Chat run failed", err);
       dispatch(
         addMessage({
-          id: Date.now() + 1,
+          id: Date.now() + Math.random(),
           sender: "bot",
           text: "Something went wrong. Please try again.",
-        })
+        }),
       );
     }
-  };
+ };
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50">
-      <div className="flex-1 overflow-y-auto p-8 space-y-4">
+    <div className="flex-1 flex flex-col bg-slate-50 w-full overflow-hidden h-full">
+      {/* MESSAGES */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 w-full h-0">
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} isBot={m.sender === "bot"} />
         ))}
@@ -107,17 +118,19 @@ export default function ChatInterface() {
             <span className="text-sm font-medium">Thinking...</span>
           </div>
         )}
+
         <div ref={chatEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="border-t bg-white p-4">
+      {/* INPUT */}
+      <div className="border-t bg-white p-3 w-full">
         <SuggestionBar />
 
-        <div className="mt-3 flex gap-3 items-center">
+        <div className="mt-3 flex items-center gap-2 w-full">
+          {/* FILE BUTTON */}
           <button
             onClick={handlePlusClick}
-            className="p-3 bg-slate-100 rounded-xl hover:bg-slate-200"
+            className="p-2 bg-slate-100 rounded-lg hover:bg-slate-200 shrink-0"
           >
             <Plus size={18} />
           </button>
@@ -130,20 +143,24 @@ export default function ChatInterface() {
             accept=".pdf,.doc,.docx,.txt"
           />
 
+          {/* INPUT FIELD */}
           <input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) =>
-              e.key === "Enter" && !e.shiftKey && handleSendMessage(inputValue)
-            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !isLoading) {
+                handleSendMessage(inputValue);
+              }
+            }}
             placeholder="Type a message..."
-            className="flex-1 p-3 bg-slate-100 rounded-xl outline-none"
+            className="flex-1 min-w-0 p-2 bg-slate-100 rounded-lg outline-none"
           />
 
+          {/* SEND BUTTON */}
           <button
             onClick={() => handleSendMessage(inputValue)}
             disabled={!inputValue.trim() || isLoading}
-            className="p-3 bg-indigo-600 text-white rounded-xl"
+            className="p-2 bg-indigo-600 text-white rounded-lg shrink-0"
           >
             <Send size={18} />
           </button>

@@ -7,7 +7,7 @@ export default function SuggestionBar() {
   ];
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2">
+    <div className="flex flex-wrap gap-2 overflow-x-auto">
       {items.map((i, idx) => (
         <button
           key={idx}

@@ -1,5 +1,5 @@
 # backend/app/schemas/user.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr,Field
 from typing import Optional
 from datetime import datetime
 
@@ -13,12 +13,16 @@ class UserLogin(BaseModel):
     email_id: str
     password: str
 
-class UserUpdate(BaseModel):
-    username: Optional[str]
-    first_name: Optional[str]
-    last_name: Optional[str]
-    timezone: Optional[str]
+class UserProfileUpdate(BaseModel):
+    first_name: Optional[str] = None
+    middle_name: Optional[str] = None
+    last_name: Optional[str] = None
+    username: Optional[str] = None
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(..., min_length=8)
+    new_password: str = Field(..., min_length=8)
+    confirm_password: str = Field(..., min_length=8)
 class UserOut(BaseModel):
     user_id: int
     username: str

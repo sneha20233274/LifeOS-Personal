@@ -3,12 +3,11 @@ import { baseQuery } from "./baseQuery";
 
 export const fitnessApi = createApi({
   reducerPath: "fitnessApi",
-  baseQuery, // ✅ reuse shared baseQuery
+  baseQuery, 
   endpoints: (builder) => ({
     getWeeklyFitnessRoutine: builder.query({
-      query: (userId) => ({
+      query: () => ({
         url: "/fitness/weekly-routine",
-        params: { user_id: userId },
       }),
     }),
   }),

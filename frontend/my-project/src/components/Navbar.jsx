@@ -9,14 +9,20 @@ import {
   BarChart3,
   CalendarDays,
 } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "./ui/Button";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout } from "../store/authSlice";
+import { useLogoutMutation } from "../services/authApi";
+import { useCreateNewChatMutation } from "../services/chatApi";
+
 
 export function Navbar({ isRoutineCompleted }) {
   const { isAuthenticated } = useSelector((s) => s.auth);
+  const [createNewChat] = useCreateNewChatMutation();
   const dispatch = useDispatch();
+   const [logoutApi] = useLogoutMutation();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -74,8 +80,26 @@ export function Navbar({ isRoutineCompleted }) {
           <div className="hidden md:flex items-center gap-2 bg-white/10 p-1 rounded-full">
             {navItem("Home", Home, "/")}
             {navItem("Fitness", Dumbbell, "/fitness")}
-            {navItem("AI Planner", Sparkles, "/planner")}
-            {navItem("DayCraft", CalendarDays, "/calendar")}
+            <button
+              onClick={async () => {
+                try {
+                  const res = await createNewChat().unwrap();
+                  const threadId = res.thread_id;
+                  navigate(`/session/${threadId}`);
+                } catch (err) {
+                  console.error("Failed to start AI Planner", err);
+                }
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                isActive("/planner")
+                  ? "bg-white text-purple-700 shadow-lg"
+                  : "text-white/80 hover:bg-white/20 hover:text-white"
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              AI Planner
+            </button>
+            {navItem("DayCraft", CalendarDays, "/calender")}
             {navItem("Dashboard", BarChart3, "/dashboard")}
           </div>
         )}
@@ -105,14 +129,15 @@ export function Navbar({ isRoutineCompleted }) {
                 variant="ghost"
                 size="icon"
                 className="rounded-full bg-white/20 hover:bg-white/30 text-white"
+                onClick={() => navigate("/profile")}
               >
                 <User className="w-5 h-5" />
               </Button>
 
               {/* Logout */}
               <Button
-                onClick={() => {
-                  dispatch(logout());
+                onClick={async () => {
+                  await logoutApi();
                   navigate("/");
                 }}
                 variant="ghost"

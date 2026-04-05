@@ -15,11 +15,18 @@ class ReminderStatus(str, Enum):
     failed = "failed"
 
 
+# 🔁 TOGGLE SCHEMA (NEW)
+class ReminderToggle(BaseModel):
+    hasReminder: bool
+
+
+# ➕ CREATE CUSTOM REMINDER
 class ReminderCreate(BaseModel):
     remind_at: datetime
     channel: ReminderChannel = ReminderChannel.email
 
 
+# 📤 RESPONSE
 class ReminderResponse(BaseModel):
     id: int
     routine_event_id: int
@@ -28,6 +35,6 @@ class ReminderResponse(BaseModel):
     channel: ReminderChannel
     status: ReminderStatus
     sent_at: Optional[datetime]
-
+    
     class Config:
         from_attributes = True

@@ -1,7 +1,7 @@
 # app/schemas/routine_event.py
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional,Literal
 from pydantic import BaseModel, Field
 from enum import Enum
 
@@ -46,7 +46,8 @@ class RoutineEventResponse(RoutineEventCreate):
     calendar_event_id: Optional[str]
     created_at: datetime
     updated_at: datetime
-
+    
+    has_reminder: Optional[bool] = False
     class Config:
         from_attributes = True
 
@@ -63,6 +64,6 @@ class RoutineEventUpdate(BaseModel):
 
     category: Optional[str] = None
     priority: Optional[PriorityEnum] = None
-    status: Optional[StatusEnum] = None
+    status: Literal["Scheduled", "Completed", "Cancelled"]
 
     location_or_link: Optional[str] = None

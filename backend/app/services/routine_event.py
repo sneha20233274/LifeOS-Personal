@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-
+from datetime import datetime , timedelta
 from app.models.routine_event import RoutineEvent
 from app.schemas.routine_event import RoutineEventCreate, RoutineEventUpdate
 from app.integrations.google.calendar_actions import (
@@ -8,6 +8,8 @@ from app.integrations.google.calendar_actions import (
     push_update_event,
     push_delete_event,
 )
+from sqlalchemy import case,and_
+from app.models.reminder import Reminder
 
 def get_routine_event(
     db: Session,
@@ -39,6 +41,70 @@ def list_routine_events(
         .order_by(RoutineEvent.start_time.asc())
         .all()
     )
+
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo  # Python 3.9+
+from app.models.routine_event import RoutineEvent
+
+def list_routine_events_by_date(
+    db,
+    user_id: int,
+    date: datetime,
+    tz: str,
+):
+    """
+    date: UTC datetime that represents LOCAL midnight
+    tz: IANA timezone string (e.g. 'Asia/Kolkata', 'America/New_York')
+    """
+
+    user_tz = ZoneInfo(tz)
+
+    # 1️⃣ Convert UTC → user's local timezone
+    local_date = date.astimezone(user_tz)
+
+    # 2️⃣ Build local day range
+    local_start = local_date.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    local_end = local_start + timedelta(days=1)
+
+    # 3️⃣ Convert back to UTC
+    utc_start = local_start.astimezone(ZoneInfo("UTC"))
+    utc_end = local_end.astimezone(ZoneInfo("UTC"))
+
+    # 4️⃣ Query events + reminder state (USER-SCOPED)
+    rows = (
+        db.query(
+            RoutineEvent,
+            case(
+                (Reminder.id.isnot(None), True),
+                else_=False
+            ).label("has_reminder")
+        )
+        .outerjoin(
+            Reminder,
+            and_(
+                Reminder.routine_event_id == RoutineEvent.id,
+                Reminder.user_id == user_id,   # 🔥 THIS FIXES IT
+            )
+        )
+        .filter(
+            RoutineEvent.user_id == user_id,
+            RoutineEvent.start_time >= utc_start,
+            RoutineEvent.start_time < utc_end,
+        )
+        .order_by(RoutineEvent.start_time.asc())
+        .all()
+    )
+
+    events = []
+    for event, has_reminder in rows:
+        event.has_reminder = has_reminder
+        events.append(event)
+    print([(e.id, e.has_reminder) for e in events])
+
+    return events
+
 
 def create_routine_event(
     db: Session,

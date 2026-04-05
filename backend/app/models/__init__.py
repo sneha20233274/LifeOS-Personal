@@ -7,3 +7,6 @@ from .subtask import Subtask
 from .activity import Activity
 from .habit import Habit
 from .notification import Notification
+from app.models.routine_event import RoutineEvent
+from app.models.reminder import Reminder   # 🔥 THIS LINE IS REQUIRED
+from app.models.google_token import GoogleToken

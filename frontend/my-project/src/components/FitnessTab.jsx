@@ -63,15 +63,19 @@ export default function FitnessTab() {
   const initializedRef = useRef(false);
 
   const { user } = useSelector((s) => s.auth);
-
+  
   const {
     data: weeklyFitnessRoutine,
     isLoading,
     isError,
-  } = useGetWeeklyFitnessRoutineQuery(user?.user_id);
+  } = useGetWeeklyFitnessRoutineQuery();
 
   const daySchedule = weeklyFitnessRoutine?.schedule?.[todayKey];
-
+  console.log("todayKey:", todayKey);
+  console.log(
+    "schedule keys:",
+    Object.keys(weeklyFitnessRoutine?.schedule || {}),
+  );
   const storageKey = user ? `fitness_data_${user.user_id}_${dateString}` : null;
   const celebrationKey = user
     ? `fitness_celebrated_${user.user_id}_${dateString}`

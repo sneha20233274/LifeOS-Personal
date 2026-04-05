@@ -1,10 +1,20 @@
 import { categoryConfigs } from "../app/categoryConfig";
 
 import { Card } from "./ui/card";
+import { useEffect } from "react";
+import {
+  useGetAnalyticsMutation,
+  useGetProductivityMutation,
+  useGetWeeklyMutation,
+  useGetTrendMutation,
+  useGetProductivityAverageMutation,
+  useGetInsightsMutation, // ✅ ADD THIS
+} from "../services/analyticsApi";
 import { Badge } from "./ui/badge";
 import { ScrollArea } from "./ui/scroll-area";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { motion } from "framer-motion";
+import { useGetActivitiesQuery } from "../services/activitiesApi";
 import {
   BarChart,
   Bar,
@@ -34,7 +44,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { Progress } from "./ui/progress";
-import { useGetActivitiesQuery } from "../services/activitiesApi";
+
 
 export function Dashboard() {
   const productiveCategories = ["work", "learning", "exercise"];
@@ -50,91 +60,151 @@ export function Dashboard() {
   });
  
 
- 
+const [getAnalytics, { data: categoryData }] = useGetAnalyticsMutation();
+const [getProductivity, { data: productivityData }] =
+  useGetProductivityMutation();
+const [getWeekly, { data: weeklyApiData }] = useGetWeeklyMutation();
+const [getTrend, { data: trendApiData }] = useGetTrendMutation();
+const [getProductivityAverage, { data: avgData }] =
+  useGetProductivityAverageMutation();
   const { data: rawActivities = [] } = useGetActivitiesQuery();
+  const [getInsights, { data: insightsData }] = useGetInsightsMutation();
+  console.log("categoryData", categoryData);
+  console.log("productivityData", productivityData);
+  console.log("weeklyApiData", weeklyApiData);
+  console.log("trendApiData", trendApiData);
+  console.log("avgData", avgData);
 
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-indexed
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+useEffect(() => {
+  const today = new Date();
+
+  const end = formatDate(today);
+
+  const startDate = new Date();
+  startDate.setDate(today.getDate() - 6);
+
+  const start = formatDate(startDate);
+
+  const filters = {
+    date_range: { start, end },
+  };
+
+  const categoryPayload = {
+    filters,
+    spec: {
+      group_by: "summary_category",
+      aggregation: "sum",
+      field: "duration_minutes",
+    },
+  };
+
+  const weeklyPayload = {
+    filters,
+    spec: {
+      group_by: "day_of_week",
+      aggregation: "sum",
+      field: "duration_minutes",
+    },
+  };
+
+  const avgPayload = {
+    filters,
+    spec: {
+      aggregation: "average",
+      field: "duration_minutes",
+    },
+  };
+
+  console.log("DATES:", start, end); // 🔥 debug
+
+  getAnalytics(categoryPayload);
+  getProductivity(categoryPayload);
+  getWeekly(weeklyPayload);
+  getTrend(weeklyPayload);
+  getProductivityAverage(avgPayload);
+
+   getInsights({
+     filters,
+   });
+}, []);
+   
+  const isLoading =
+    !categoryData &&
+    !productivityData &&
+    !weeklyApiData &&
+    !trendApiData &&
+    !avgData;
+ if (isLoading) {
+    return <div className="text-white p-6">Loading...</div>;
+ }
+  
+ 
   const activities = rawActivities.map(normalizeActivity);
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  const weeklyData = weekDays.map((day) => {
-    const dayMinutes = Math.floor(Math.random() * 400) + 200;
-    const productiveMinutes = Math.floor(
-      dayMinutes * (0.4 + Math.random() * 0.4),
-    );
-    return {
-      day,
-      total: dayMinutes / 60,
-      productive: productiveMinutes / 60,
-      nonProductive: (dayMinutes - productiveMinutes) / 60,
-    };
-  });
+const weeklyData = (weeklyApiData?.data || []).map((item) => ({
+  day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][item.day],
+  productive: item.productive,
+  nonProductive: item.nonProductive,
+}));
 
-  const todayCategories = {};
-  activities.slice(0, 6).forEach((act) => {
-    act.summary_category.forEach((cat) => {
-      todayCategories[cat] = (todayCategories[cat] || 0) + act.duration_minutes;
-    });
-  });
-
-  const todayData = Object.entries(todayCategories).map(([cat, minutes]) => ({
-    name: categoryConfigs[cat]?.label || cat,
-    value: minutes,
-    category: cat,
-  }));
-
+const todayData = (categoryData?.data || []).map((item) => ({
+  ...item,
+  name: categoryConfigs[item.name]?.label || item.name,
+  category: item.name,
+}));
+   
   const mostFocusedCategory =
-    todayData.length > 0
-      ? todayData.reduce((max, curr) => (curr.value > max.value ? curr : max))
-      : null;
+  todayData.length > 0
+    ? todayData.reduce((max, curr) =>
+        curr.value > max.value ? curr : max
+      )
+    : null;
 
-  const productivityTrend = Array.from({ length: 7 }, (_, i) => ({
-    day: new Date(
-      Date.now() - (6 - i) * 24 * 60 * 60 * 1000,
-    ).toLocaleDateString("en-US", { weekday: "short" }),
-    score: 55 + Math.random() * 30,
-    baseline: 65,
-  }));
+const productivityTrend = (trendApiData?.data || []).map((item) => ({
+  day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][item.day],
+  score: item.score,
+  baseline: avgData?.average || 50,
+}));
 
-  const totalMinutes = activities.reduce(
-    (sum, act) => sum + act.duration_minutes,
-    0,
-  );
+  const totalMinutes = todayData.reduce((sum, item) => sum + item.value, 0);
+  
+  const productiveMinutes = todayData
+    .filter((item) => productiveCategories.includes(item.category))
+    .reduce((sum, item) => sum + item.value, 0);
 
-  const productiveMinutes = activities.reduce((sum, act) => {
-    const hasProductive = act.summary_category.some((cat) =>
-      productiveCategories.includes(cat),
-    );
-    return hasProductive ? sum + act.duration_minutes : sum;
-  }, 0);
-
-  const productivityPercentage =
-    totalMinutes > 0 ? Math.round((productiveMinutes / totalMinutes) * 100) : 0;
+ const productivityPercentage = productivityData?.productivity
+  ? Math.round(productivityData.productivity * 100)
+  : 0;
 
   const wastedInvestedData = [
     {
       name: "Productive",
-      value: productiveMinutes,
+      value: todayData
+        .filter((i) => productiveCategories.includes(i.category))
+        .reduce((sum, i) => sum + i.value, 0),
       color: "#10b981",
     },
     {
       name: "Neutral",
-      value: activities.reduce((sum, act) => {
-        const hasNeutral = act.summary_category.some((cat) =>
-          neutralCategories.includes(cat),
-        );
-        return hasNeutral ? sum + act.duration_minutes : sum;
-      }, 0),
+      value: todayData
+        .filter((i) => neutralCategories.includes(i.category))
+        .reduce((sum, i) => sum + i.value, 0),
       color: "#f59e0b",
     },
     {
       name: "Wasted",
-      value: activities.reduce((sum, act) => {
-        const hasWasted = act.summary_category.some((cat) =>
-          wastedCategories.includes(cat),
-        );
-        return hasWasted ? sum + act.duration_minutes : sum;
-      }, 0),
+      value: todayData
+        .filter((i) => wastedCategories.includes(i.category))
+        .reduce((sum, i) => sum + i.value, 0),
       color: "#ef4444",
     },
   ];
@@ -155,22 +225,30 @@ export function Dashboard() {
     if (diffHours > 0) return `${diffHours}h ago`;
     return `${diffMins}m ago`;
   };
+  console.log("weeklyData", weeklyData);
+  console.log("todayData", todayData);
+  console.log("productivityTrend", productivityTrend);
+  console.log("wastedInvestedData", wastedInvestedData);
 
-  const insights = [
-    {
-      icon: Calendar,
-      text: "You are most productive on Tuesdays.",
-      trend: "up",
-    },
-    { icon: Clock, text: "Your productivity drops after 9 PM.", trend: "down" },
-    { icon: Zap, text: "Coding gives you highest focus score.", trend: "up" },
-    {
-      icon: TrendingUp,
-      text: "Entertainment time increased 18% this week.",
-      trend: "neutral",
-    },
-  ];
+  const insights = insightsData?.insights || [];
+  const mappedInsights = insights.map((insight) => {
+  let icon = Brain;
+  let trend = "neutral";
 
+  if (insight.type === "positive" || insight.type === "improving") {
+    icon = TrendingUp;
+    trend = "up";
+  } else if (insight.type === "warning" || insight.type === "declining") {
+    icon = TrendingDown;
+    trend = "down";
+  }
+
+  return {
+    icon,
+    text: insight.text,
+    trend,
+  };
+});
   const COLORS = [
     "#8b5cf6",
     "#3b82f6",
@@ -694,7 +772,7 @@ export function Dashboard() {
                 </div>
               </div>
               <div className="space-y-3">
-                {insights.map((insight, index) => {
+                {mappedInsights.map((insight, index) => {
                   const Icon = insight.icon;
                   return (
                     <motion.div

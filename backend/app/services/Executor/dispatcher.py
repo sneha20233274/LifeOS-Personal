@@ -11,6 +11,7 @@ from app.services.Executor.subtask_rewire import RewireSubtaskDependencyExecutor
 from app.services.Executor.create_task import CreateTaskExecutor
 from app.services.Executor.subtask_create import CreateSubtaskExecutor
 from app.services.Executor.create_fitness_routine import CreateFitnessRoutineExecutor
+from app.services.Executor.schedule_routine_event import ScheduleRoutineEventExecutor
 
 EXECUTORS = {
     "create_goal": CreateGoalExecutor(),
@@ -20,8 +21,8 @@ EXECUTORS = {
     "rewire_subtask_dependency": RewireSubtaskDependencyExecutor(),
     "create_task": CreateTaskExecutor(),
     "create_subtask": CreateSubtaskExecutor(),
-    "create_weekly_fitness_routine" : CreateFitnessRoutineExecutor()
-
+    "create_weekly_fitness_routine" : CreateFitnessRoutineExecutor(),
+    "schedule_routine_event": ScheduleRoutineEventExecutor(),
 }
 
 

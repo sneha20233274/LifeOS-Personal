@@ -1,5 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
+import AppLayout from "./components/AppLayout";
+import ProtectedRoute from "./components/ProtectedRoute"; // ✅ ADD
 
 import MainPage from "./components/MainPage";
 import { LoginPage } from "./components/LoginPage";
@@ -15,38 +17,47 @@ import { CreateSubtask } from "./components/CreateSubtask";
 import { CreateTask } from "./components/CreateTask";
 
 import FitnessTab from "./components/FitnessTab";
-import {WeeklyViewFitness} from "./components/WeeklyViewFitness";
-import  Reminder  from "./components/Reminder";
+import { WeeklyViewFitness } from "./components/WeeklyViewFitness";
+import Reminder from "./components/Reminder";
+import Profile from "./components/Profile";
 
 export default function App() {
   return (
     <Routes>
-      {/* ROUTES WITH NAVBAR */}
+      {/* 🌐 PUBLIC ROUTES */}
       <Route element={<Layout />}>
         <Route path="/" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/goals" element={<GoalsPage />} />
-
-        {/* SAME PAGE – DIFFERENT CONTEXT */}
-        <Route path="/tasks" element={<TasksPage />} />
-        <Route path="/goals/:goalId/tasks" element={<TasksPage />} />
-        <Route path="/tasks/:taskId/subtasks" element={<SubtasksPage />} />
-        <Route path="/tasks/new" element={<CreateTask />} />
-        <Route path="/goals/:goalId/tasks/new" element={<CreateTask />} />
-        <Route path="/tasks/:taskId/subtasks/new" element={<CreateSubtask />} />
-
-        <Route path="/planner" element={<SessionPage />} />
-        <Route path="/session/:threadId" element={<ChatInterface />} />
-        <Route path="/fitness" element={<FitnessTab />} />
-        <Route path="/fitness/week" element={<WeeklyViewFitness />} />
       </Route>
 
-      {/* ROUTES WITHOUT NAVBAR */}
-      <Route path="/show-plan" element={<ProposalsPage />} />
-      
-      <Route path = '/calender' element = {<Reminder/>}/>
+      {/* 🔒 PROTECTED ROUTES */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/goals" element={<GoalsPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/goals/:goalId/tasks" element={<TasksPage />} />
+          <Route path="/tasks/:taskId/subtasks" element={<SubtasksPage />} />
+          <Route path="/tasks/new" element={<CreateTask />} />
+          <Route path="/goals/:goalId/tasks/new" element={<CreateTask />} />
+          <Route
+            path="/tasks/:taskId/subtasks/new"
+            element={<CreateSubtask />}
+          />
+          <Route path="/fitness" element={<FitnessTab />} />
+          <Route path="/fitness/week" element={<WeeklyViewFitness />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/calender" element={<Reminder />} />
+          <Route path="/show-plan" element={<ProposalsPage />} />
+        </Route>
+
+        {/* 🤖 AI Planner protected */}
+        <Route element={<AppLayout />}>
+          <Route path="/planner" element={<SessionPage />} />
+          <Route path="/session/:threadId" element={<ChatInterface />} />
+        </Route>
+      </Route>
     </Routes>
   );
 }

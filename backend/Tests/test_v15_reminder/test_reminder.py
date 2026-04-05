@@ -23,7 +23,7 @@ def test_interrupt_approve_resume_routine_schedule(db):
     # ---------------------------
     # STEP 0: Test config
     # ---------------------------
-    thread_id = "routine-scheduling-b"
+    thread_id = "routine-scheduling-d"
     user_id = 5
 
     config = {

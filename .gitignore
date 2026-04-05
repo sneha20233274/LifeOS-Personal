@@ -16,3 +16,5 @@ osvenv/
 # Ignore IDE settings
 .vscode/
 .idea/
+
+backend/credentials.json

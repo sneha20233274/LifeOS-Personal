@@ -1,23 +1,18 @@
 from app.models.enums import productive_categories
-def compute_productivity(aggregated_by_category: dict[str, float]) -> float:
+def compute_productivity(aggregated_by_category: dict) -> float:
     """
-      Compute productivity score from aggregated category data.
-
-      Input example:
-      {
-          SummaryCategoryEnum.learning: 120,
-          SummaryCategoryEnum.work: 90,
-          SummaryCategoryEnum.leisure: 30,
-      }
-
-      Output:
-      0.7
+    Compute productivity score from aggregated category data.
+    Works correctly with Enum or string keys.
     """
-    productive_time = sum(
-        duration
-        for category, duration in aggregated_by_category.items()
-        if category in productive_categories
-    )
+
+    productive_time = 0
+
+    for category, duration in aggregated_by_category.items():
+        # ✅ Convert Enum → string safely
+        category_str = getattr(category, "value", category)
+
+        if category_str in productive_categories:
+            productive_time += duration
 
     total_time = sum(aggregated_by_category.values())
 

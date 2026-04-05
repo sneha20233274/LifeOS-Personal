@@ -24,6 +24,36 @@ tools = [
 tools_by_name = {tool.name: tool for tool in tools}
 
 analysis_llm_model = analysis_llm.bind_tools( tools )
+# -----------------------------
+# 🔥 FORMAT FUNCTION (NEW)
+# -----------------------------
+def format_aggregation_result(data):
+    if data is None:
+        return "No activity data found."
+
+    # 🔥 CASE 1: scalar value (float/int)
+    if isinstance(data, (int, float)):
+        return f"Total time: {round(data, 2)} minutes"
+
+    # 🔥 CASE 2: dictionary
+    if isinstance(data, dict):
+        if not data:
+            return "No activity data found."
+
+        lines = []
+        total = 0
+
+        for k, v in data.items():
+            key = getattr(k, "value", str(k))
+            lines.append(f"- {key}: {round(v, 2)} minutes")
+            total += v
+
+        lines.append(f"\nTotal time: {round(total, 2)} minutes")
+
+        return "\n".join(lines)
+
+    # 🔥 fallback
+    return str(data)
 
 def analysis_node(state: ChatState) -> ChatState:
     """
@@ -31,17 +61,74 @@ def analysis_node(state: ChatState) -> ChatState:
     It sees the full history, including ToolMessages from the execution node.
     """
     aggregation_result = state.get("aggregation_result", "No data available")
+    formatted_data = format_aggregation_result(aggregation_result)
     
     # 1. Inject the Aggregation Result into the System Context
     #    This ensures the LLM sees the data even after looping back from a tool call.
     system_message = SystemMessage(content=f"""
 {ANALYSIS_PROMPT}
 
-### CURRENT DATA CONTEXT
-The following data has been retrieved based on the user's query:
-{aggregation_result}
+### USER ACTIVITY DATA
+{formatted_data}
 
-Use this data to answer the user or use tools to calculate specific metrics.
+---
+
+### INSTRUCTIONS (STRICT)
+
+You MUST follow these rules:
+
+1. The data above is COMPLETE and VALID.
+2. NEVER say "data not available".
+3. DO NOT ask for more data.
+4. Use ONLY the given data.
+5. Be direct and clear.
+
+---
+
+### FORMAT RULES (VERY IMPORTANT)
+
+- DO NOT use tables
+- DO NOT use "|" symbols
+- DO NOT use markdown tables
+- Use simple bullet points ONLY
+- Keep response clean and readable
+
+---
+
+### RESPONSE STYLE
+
+If showing breakdown:
+
+Example:
+You spent your time as follows:
+- Work: 4502 minutes
+- Learning: 239 minutes
+- Exercise: 59 minutes
+
+Total: 5391 minutes (~89.9 hours)
+
+---
+
+If user asks total:
+
+Example:
+You spent 5391 minutes (~89.9 hours) this week.
+
+---
+
+If user asks comparison:
+
+Example:
+You spent the most time on Work (4502 minutes), followed by Learning (239 minutes).
+
+---
+
+If data is insufficient:
+
+Say:
+"I don't have enough data to answer this."
+
+---
 """)
 
     # 2. Combine System Prompt with Conversation History

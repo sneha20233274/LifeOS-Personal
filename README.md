@@ -77,3 +77,7 @@ Updated graph after fitness tab functionality added
 
 <img width="1783" height="1234" alt="output_4" src="https://github.com/user-attachments/assets/a22f93f6-bf60-4bae-9d16-c3f7974a760d" />
 Updated Langgraph 
+
+<img width="1919" height="862" alt="Screenshot 2026-01-20 193157" src="https://github.com/user-attachments/assets/ddcd41ce-b5ad-423a-a6e5-df53ca362405" />
+
+daily-planner ui
