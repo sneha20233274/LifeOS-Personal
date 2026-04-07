@@ -15,7 +15,7 @@ import { useChangePasswordMutation } from "../services/authApi";
 
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/Avatar";
 import { Badge } from "./ui/Badge";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./figma/ImageWithFallBack";
 
 // 🔑 profile API
 import { useGetMyProfileQuery } from "../services/userApi";

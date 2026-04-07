@@ -10,7 +10,7 @@ import { CelebrationModal } from "./CelebrationModal";
 import { useGetWeeklyFitnessRoutineQuery } from "../services/fitnessApi";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./figma/ImageWithFallBack";
 
 /* ------------------------------------------------
    HELPERS

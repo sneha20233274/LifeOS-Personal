@@ -12,7 +12,7 @@ import {
 } from "../services/analyticsApi";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/Scroll-area";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./figma/ImageWithFallBack";
 import { motion } from "framer-motion";
 import { useGetActivitiesQuery } from "../services/activitiesApi";
 import {

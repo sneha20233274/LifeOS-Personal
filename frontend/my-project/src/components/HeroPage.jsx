@@ -1,6 +1,6 @@
 import { Calendar, Target, Brain, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "./ui/Button";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./figma/ImageWithFallBack";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 

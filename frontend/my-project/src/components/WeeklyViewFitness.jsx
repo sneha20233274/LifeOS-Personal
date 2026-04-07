@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useGetWeeklyFitnessRoutineQuery } from "../services/fitnessApi";
 import { useSelector } from "react-redux";
 import { Badge } from "./ui/Badge";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { ImageWithFallback } from "./figma/ImageWithFallBack";
 
 const DAY_COLORS = {
   monday: "from-pink-400 to-rose-500",
