@@ -7,9 +7,8 @@ import { Toaster, toast } from "sonner";
 import { GoalProposal } from "./GoalProposal";
 import { TaskProposal } from "./TaskProposal";
 import { ActivityProposal } from "./ActivityProposal";
-import { useSubmitProposalsMutation } from "../services/proposalsApi";
+import { useSubmitProposalsMutation } from "../services/ProposalsApi";
 import { FitnessProposal } from "./FitnessProposal";
-
 
 export function ProposalsPage() {
   const location = useLocation();
@@ -99,21 +98,20 @@ export function ProposalsPage() {
     (p) => p.action_type === "create_weekly_fitness_routine",
   );
 
-
   /* -----------------------------
      PROPOSAL ROOTS (KEY CHANGE)
   ------------------------------ */
-const proposalRoots = [
-  ...(fitnessProposal ? [{ type: "fitness", data: fitnessProposal }] : []),
+  const proposalRoots = [
+    ...(fitnessProposal ? [{ type: "fitness", data: fitnessProposal }] : []),
 
-  ...goals.map((g) => ({ type: "goal", data: g })),
+    ...goals.map((g) => ({ type: "goal", data: g })),
 
-  ...tasks
-    .filter((t) => !t.payload?.goal_id)
-    .map((t) => ({ type: "task", data: t })),
+    ...tasks
+      .filter((t) => !t.payload?.goal_id)
+      .map((t) => ({ type: "task", data: t })),
 
-  ...activities.map((a) => ({ type: "activity", data: a })),
-];
+    ...activities.map((a) => ({ type: "activity", data: a })),
+  ];
 
   /* =============================
      UI

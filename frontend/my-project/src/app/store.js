@@ -12,7 +12,7 @@ import { analyticsApi } from "../services/analyticsApi";
    RTK QUERY APIS
 ---------------------------- */
 import { authApi } from "../services/authApi";
-import { proposalsApi } from "../services/proposalsApi";
+import { proposalsApi } from "../services/ProposalsApi";
 import { chatApi } from "../services/chatApi";
 import { goalsApi } from "../services/goalsApi";
 import { tasksApi } from "../services/tasksApi";
