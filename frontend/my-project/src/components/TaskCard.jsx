@@ -7,8 +7,8 @@ import {
   Trash2,
   ChevronRight,
 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Checkbox } from "./ui/checkbox";
+import { Button } from "./ui/Button";
+import { Checkbox } from "./ui/Checkbox";
 import { useNavigate } from "react-router-dom";
 
 export function TaskCard({ task }) {

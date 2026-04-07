@@ -7,8 +7,8 @@ import {
   Trash2,
   ChevronRight,
 } from "lucide-react";
-import { Progress } from "./ui/progress";
-import { Button } from "./ui/button";
+import { Progress } from "./ui/Progress";
+import { Button } from "./ui/Button";
 import { useNavigate } from "react-router-dom";
 
 export function GoalCard({ goal }) {

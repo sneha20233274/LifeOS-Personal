@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, Plus, Search, Filter, ListTodo } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 import { SubtaskCard } from "./SubtaskCard";
 import { useNavigate, useParams } from "react-router-dom";
 

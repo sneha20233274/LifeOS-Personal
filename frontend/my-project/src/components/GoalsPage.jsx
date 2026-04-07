@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, Search, Filter, Target } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 import { GoalCard } from "./GoalCard";
 import { useNavigate } from "react-router-dom";
 

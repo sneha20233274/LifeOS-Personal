@@ -14,7 +14,7 @@ import GoalsTasksTabs from "./GoalsTasksTabs";
 import { useChangePasswordMutation } from "../services/authApi";
 
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import { Badge } from "./ui/badge";
+import { Badge } from "./ui/Badge";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
 // 🔑 profile API

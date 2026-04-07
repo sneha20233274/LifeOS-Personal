@@ -10,8 +10,8 @@ import {
   useGetProductivityAverageMutation,
   useGetInsightsMutation, // ✅ ADD THIS
 } from "../services/analyticsApi";
-import { Badge } from "./ui/badge";
-import { ScrollArea } from "./ui/scroll-area";
+import { Badge } from "./ui/Badge";
+import { ScrollArea } from "./ui/Scroll-area";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { motion } from "framer-motion";
 import { useGetActivitiesQuery } from "../services/activitiesApi";
@@ -43,7 +43,7 @@ import {
   Brain,
   Calendar,
 } from "lucide-react";
-import { Progress } from "./ui/progress";
+import { Progress } from "./ui/Progress";
 
 
 export function Dashboard() {

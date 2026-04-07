@@ -2,8 +2,8 @@ import { useState } from "react";
 import { ArrowLeft, Save, ChevronDown } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 import { Textarea } from "./ui/Textarea";
 
 import { useCreateTaskMutation } from "../services/tasksApi";

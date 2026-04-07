@@ -8,8 +8,8 @@ import {
   CheckCircle2,
   Target,
 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Checkbox } from "./ui/checkbox";
+import { Button } from "./ui/Button";
+import { Checkbox } from "./ui/Checkbox";
 
 export function SubtaskCard({ subtask }) {
   /* -----------------------------
