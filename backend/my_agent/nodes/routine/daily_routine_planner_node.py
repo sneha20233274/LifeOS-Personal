@@ -1,6 +1,10 @@
 from langchain_core.messages import SystemMessage, HumanMessage
+import json
+
+from my_agent.llm import routine_structurer_llm
 
 
+# ✅ UPDATED SYSTEM PROMPT (FIX ADDED)
 DAILY_ROUTINE_PLANNER_SYSTEM_MESSAGE = SystemMessage(
     content="""
 You are a daily routine planner.
@@ -15,6 +19,12 @@ You are given:
 - The target date
 
 RULES (DO NOT BREAK):
+content="""
+
+"""
+- You MUST generate at most 8 events.
+- Titles must be short (max 6–8 words).
+- Keep output small and concise.
 1. You MUST respect all existing scheduled events.
 2. You MUST NOT create overlapping events.
 3. You MUST decide start_time and end_time for every event.
@@ -23,6 +33,8 @@ RULES (DO NOT BREAK):
 6. You MUST NOT include any fields outside the schema.
 7. You MUST NOT ask questions or include explanations.
 8. You MUST assume the user may edit the result later, but YOU WILL NOT be re-run.
+9. start_time and end_time MUST be in format YYYY-MM-DDTHH:MM:SS (seconds REQUIRED).
+   Example: 2026-04-05T09:30:00
 
 PLANNING BEHAVIOR:
 - If the user explicitly asked to schedule something, it has highest priority.
@@ -49,10 +61,9 @@ No text. No markdown. No commentary.
 """
 )
 
-import json
 
+# ✅ SAFE MESSAGE BUILDER
 def build_daily_routine_planner_human_message(daily_context, user_prompt):
-    # ✅ Handle both dict and pydantic
     if hasattr(daily_context, "model_dump"):
         daily_context = daily_context.model_dump()
 
@@ -62,32 +73,33 @@ User request:
 {user_prompt}
 
 Daily context (facts, not decisions):
-{json.dumps(daily_context, default=str)}
+{json.dumps(daily_context, default=str)[:3000]}
 """
     )
 
-from my_agent.llm import routine_structurer_llm
-from langchain_core.messages import SystemMessage
-from langchain_core.output_parsers import PydanticOutputParser
 
-from my_agent.llm import routine_structurer_llm 
-from my_agent.chatstate import ChatState
+# ✅ 🔥 AUTO-FIX FUNCTION (VERY IMPORTANT)
+def fix_datetime_format(events):
+    for ev in events:
+        for key in ["start_time", "end_time"]:
+            val = ev.get(key)
+
+            # If format like "2026-04-05T09:30"
+            if val and len(val) == 16:
+                ev[key] = val + ":00"
+
+    return events
 
 
+# ✅ MAIN NODE
 def daily_routine_planner_node(state: dict) -> dict:
-    """
-    Merged planner + structurer node.
-    """
 
-    # ✅ SAFE ACCESS
     daily_context = state.get("daily_context")
     if not daily_context:
         raise ValueError("daily_context missing in state")
 
-    # ✅ CORRECT WAY TO GET USER PROMPT
     user_prompt = state["messages"][-1].content
 
-    # ✅ LLM CALL
     response = routine_structurer_llm.invoke(
         [
             DAILY_ROUTINE_PLANNER_SYSTEM_MESSAGE,
@@ -98,6 +110,20 @@ def daily_routine_planner_node(state: dict) -> dict:
         ]
     )
 
+    # 🔥 HANDLE RESPONSE SAFELY
+    try:
+        response_data = response
+
+        # If LLM returns object → convert if needed
+        if hasattr(response_data, "dict"):
+            response_data = response_data.dict()
+
+        if isinstance(response_data, dict) and "events" in response_data:
+            response_data["events"] = fix_datetime_format(response_data["events"])
+
+    except Exception as e:
+        print("⚠️ Error fixing datetime:", e)
+
     return {
-        "routine_structure": response
+        "routine_structure": response_data
     }

@@ -50,14 +50,15 @@ export const Remainder = () => {
   /* -----------------------------
      RTK QUERY (BACKEND STATE)
   ------------------------------ */
-  const {
-    data: events = [],
-    isLoading,
-  } = useGetEventsByDateQuery({
-        date: dateISO,
-        tz: userTimezone,
-      });
-;
+ const {
+   data: events = [],
+   isLoading,
+   refetch, // ✅ ADD THIS
+ } = useGetEventsByDateQuery({
+   date: dateISO,
+   tz: userTimezone,
+ });
+
 
   const [createEvent] = useCreateEventMutation();
   const [toggleReminder] = useToggleEventReminderMutation();
@@ -102,16 +103,19 @@ export const Remainder = () => {
     }
   };
 
-  const handleToggleReminder = async (id, hasReminder) => {
-    try {
-      await toggleReminder({ id, hasReminder: !hasReminder }).unwrap();
-      toast.success(
-        !hasReminder ? "Reminder enabled 🔔" : "Reminder disabled 🔕"
-      );
-    } catch (err) {
-      toast.error("Failed to update reminder");
-    }
-  };
+ const handleToggleReminder = async (id, hasReminder) => {
+   try {
+     await toggleReminder({ id, hasReminder: !hasReminder }).unwrap();
+
+     await refetch(); // 🔥 THIS IS MISSING
+
+     toast.success(
+       !hasReminder ? "Reminder enabled 🔔" : "Reminder disabled 🔕",
+     );
+   } catch (err) {
+     toast.error("Failed to update reminder");
+   }
+ };
 
   const handleToggleStatus = async (id, currentStatus) => {
     const nextStatus =

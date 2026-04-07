@@ -1,5 +1,7 @@
 from my_agent.chatstate import ChatState
 from app.utils.date_corruption_catch_helper import assert_deadline_type
+
+
 def proposal_builder_node(state: ChatState):
     proposals = []
 
@@ -17,82 +19,95 @@ def proposal_builder_node(state: ChatState):
     # ---------------------------
     if state.get("routine_tasks"):
         for task in state["routine_tasks"]:
-            task_key = task.temp_task_key
 
-            # ---- Task proposal ----
+            # ✅ SAFE ACCESS
+            task_key = task.get("temp_task_key")
+
             proposals.append({
                 "action_type": "create_task",
                 "payload": {
-                    "task_name": task.task_name,
-                    "description": task.description,
-                    "difficulty": task.difficulty,
-                    "temp_task_key": task_key, 
-                    "depends_on_task_key":task.depends_on_task_key # 🔑 used by apply_dependencies
+                    "task_name": task.get("task_name"),
+                    "description": task.get("description"),
+                    "difficulty": task.get("difficulty"),
+                    "temp_task_key": task_key,
+                    "depends_on_task_key": task.get("depends_on_task_key"),
                 }
             })
 
-            # ---- Subtask proposals ----
-            for subtask in task.subtasks:
-                
-
+            # ---- Subtasks ----
+            for subtask in task.get("subtasks", []):
                 proposals.append({
                     "action_type": "create_subtask",
                     "payload": {
-                        "subtask_name": subtask.subtask_name,
-                        "subtask_type": subtask.subtask_type,
-                        "target_value": subtask.target_value,
-                        "weight": subtask.weight,
-                        "deadline": subtask.deadline,
+                        "subtask_name": subtask.get("subtask_name"),
+                        "subtask_type": subtask.get("subtask_type"),
+                        "target_value": subtask.get("target_value"),
+                        "weight": subtask.get("weight"),
+                        "deadline": subtask.get("deadline"),
                         "depends_on_task_key": task_key,
-                        "depends_on_subtask_key":subtask.depends_on_subtask_key,
-
-                        # optional (if you already support this)
-                        "temp_subtask_key": subtask.temp_subtask_key,
+                        "depends_on_subtask_key": subtask.get("depends_on_subtask_key"),
+                        "temp_subtask_key": subtask.get("temp_subtask_key"),
                     }
                 })
+
+    # ---------------------------
+    # 3️⃣ Routine Events (🔥 FIXED)
+    # ---------------------------
     if state.get("routine_structure"):
-        for event in state["routine_structure"].events:
+        routine = state.get("routine_structure", {})
+        events = routine.get("events", [])
+
+        for event in events:
             proposals.append({
                 "action_type": "schedule_routine_event",
                 "payload": {
-                    "temp_event_key": event.temp_event_key,
+                    "temp_event_key": event.get("temp_event_key"),
 
-                    "title": event.title,
-                    "description": event.description,
+                    "title": event.get("title"),
+                    "description": event.get("description"),
 
-                    "start_time": event.start_time,
-                    "end_time": event.end_time,
-                    "is_all_day": event.is_all_day,
+                    "start_time": event.get("start_time"),
+                    "end_time": event.get("end_time"),
+                    "is_all_day": event.get("is_all_day"),
 
-                    "category": event.category,
-                    "priority": event.priority,
+                    "category": event.get("category"),
+                    "priority": event.get("priority"),
 
-                    "location_or_link": event.location_or_link,
-                    "source": event.source,
+                    "location_or_link": event.get("location_or_link"),
+                    "source": event.get("source"),
                 }
             })
+
+    # ---------------------------
+    # 4️⃣ Activity logs
+    # ---------------------------
     if state.get("activity_create"):
         for activity in state["activity_create"]:
             proposals.append({
                 "action_type": "log_activity",
                 "payload": {
-                    "activity_name": activity.activity_name,
-                    "activity_description": activity.activity_description,
-                    "start_ts": activity.start_ts,
-                    "end_ts": activity.end_ts,
-                    "duration_minutes": activity.duration_minutes,
-                    "summary_category": activity.summary_category,
-                    "criteria_ids": activity.criteria_ids,
+                    "activity_name": activity.get("activity_name"),
+                    "activity_description": activity.get("activity_description"),
+                    "start_ts": activity.get("start_ts"),
+                    "end_ts": activity.get("end_ts"),
+                    "duration_minutes": activity.get("duration_minutes"),
+                    "summary_category": activity.get("summary_category"),
+                    "criteria_ids": activity.get("criteria_ids"),
                 }
-            })       
-    
+            })
+
+    # ---------------------------
+    # 5️⃣ Weekly routine
+    # ---------------------------
     if state.get("weekly_routine"):
         proposals.append({
             "action_type": "create_weekly_fitness_routine",
             "payload": state["weekly_routine"]
         })
 
-
+    # ---------------------------
+    # 6️⃣ Diet plan
+    # ---------------------------
     if state.get("diet_plan"):
         proposals.append({
             "action_type": "update_diet_plan",

@@ -9,4 +9,8 @@ Rules:
 - Tasks must match Task + Subtask schema
 - No IDs, no completion fields
 - Use temporary keys for dependencies
+IMPORTANT RULES:
+- You MUST generate at most 8 events.
+- Titles must be short (max 6–8 words).
+- Do NOT generate long descriptions.
 """

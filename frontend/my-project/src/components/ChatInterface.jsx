@@ -70,6 +70,9 @@ export default function ChatInterface() {
         thread_id: currentThread,
         prompt: text,
       }).unwrap();
+      if (result.redirect) {
+        navigate(result.redirect);
+      }
 
       if (result.status === "WAITING_FOR_APPROVAL") {
         navigate("/show-plan", {

@@ -4,6 +4,24 @@ from app.services.proposal_dependency_service import apply_dependencies
 from my_agent.model_gen import chatbot
 from langchain_core.messages import AIMessage, HumanMessage
 
+from my_agent.models.action_proposal import ActionProposal, ProposalStatus
+from app.services.Executor.dispatcher import execute_proposals
+
+from datetime import datetime
+
+
+# ✅ HELPER: convert datetime → string
+def serialize_payload(payload: dict):
+    new_payload = {}
+
+    for k, v in payload.items():
+        if isinstance(v, datetime):
+            new_payload[k] = v.isoformat()
+        else:
+            new_payload[k] = v
+
+    return new_payload
+
 
 def run_chat(request: dict, db: Session, user_id: int):
     prompt = request["prompt"]
@@ -13,12 +31,12 @@ def run_chat(request: dict, db: Session, user_id: int):
         raise ValueError("thread_id is required")
 
     config = {
-    "configurable": {
-        "thread_id": thread_id,
-        "user_id": user_id,
-        "db": db   # ✅ ADD THIS
+        "configurable": {
+            "thread_id": thread_id,
+            "user_id": user_id,
+            "db": db
+        }
     }
-}
 
     result = chatbot.invoke(
         {
@@ -29,9 +47,48 @@ def run_chat(request: dict, db: Session, user_id: int):
         config=config,
     )
 
-    # -------------------------------
-    # HANDLE INTERRUPT (PROPOSALS)
-    # -------------------------------
+    intent = result.get("intent")
+
+    # =====================================================
+    # 🔥 AUTO EXECUTE FOR ROUTINE (NO APPROVAL)
+    # =====================================================
+    if intent == "scheduling":
+        raw_proposals = result.get("proposals", [])
+
+        db_proposals = []
+
+        for p in raw_proposals:
+            # ✅ FIX: convert datetime → string
+            clean_payload = serialize_payload(p["payload"])
+
+            proposal = ActionProposal(
+                user_id=user_id,
+                thread_id=thread_id,
+                action_type=p["action_type"],
+                payload=clean_payload,   # ✅ FIXED
+                status=ProposalStatus.APPROVED
+            )
+            db.add(proposal)
+            db.flush()
+            db_proposals.append(proposal)
+
+        # 🔥 EXECUTE IMMEDIATELY
+        execution_result = execute_proposals(db, db_proposals)
+
+        return {
+        "status": "COMPLETED",
+        "thread_id": thread_id,
+        "messages": [
+            {
+                "content": "✨ Your daily routine is ready! Opening DayCraft..."
+            }
+        ],
+        "redirect": "/daycraft"
+      }
+
+    # =====================================================
+    # NORMAL FLOW (WITH APPROVAL)
+    # =====================================================
     if "__interrupt__" in result:
         proposals_data = result.get("proposals", [])
 
@@ -58,13 +115,12 @@ def run_chat(request: dict, db: Session, user_id: int):
             ],
         }
 
-    # -------------------------------
-    # 🔥 RETURN ONLY LAST AI MESSAGE
-    # -------------------------------
+    # =====================================================
+    # NORMAL AI RESPONSE
+    # =====================================================
     final_messages = result.get("messages", [])
 
     last_ai_message = None
-
     for msg in reversed(final_messages):
         if isinstance(msg, AIMessage) and msg.content:
             last_ai_message = msg
@@ -79,7 +135,6 @@ def run_chat(request: dict, db: Session, user_id: int):
             ],
         }
 
-    # fallback
     return {
         "status": "COMPLETED",
         "thread_id": thread_id,

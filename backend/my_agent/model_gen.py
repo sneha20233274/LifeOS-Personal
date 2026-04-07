@@ -3,6 +3,7 @@ from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from typing import Literal
 
+
 from my_agent.chatstate import ChatState
 from my_agent.checkpointer import checkpointer
 
@@ -66,7 +67,14 @@ def conditonal_intent_resolver(state: ChatState):
     return state["intent"]
 
 def execution_router(state: ChatState):
-    return "execute" if state.get("requires_execution") else "no_execute"
+    if not state.get("requires_execution"):
+        return "no_execute"
+
+    # 🔥 ONLY ROUTINE WILL SET THIS FLAG
+    if state.get("auto_execute"):
+        return "auto_execute"
+
+    return "wait_for_approval"
 
 def should_continue(state: ChatState) -> Literal["tool_node_analytics", "end"]:
     last_message = state["messages"][-1]
@@ -154,6 +162,7 @@ graph.add_node("aggregation_node", aggregation_node)
 graph.add_node("analysis_node", analysis_node)
 graph.add_node("tool_node_analytics", tool_node_analytics)
 
+
 # ---------------- EDGES ----------------
 
 graph.add_edge(START, "intent_resolver")
@@ -225,8 +234,8 @@ graph.add_edge("diet_optimisor_node", "diet_evaluator_node")
 graph.add_conditional_edges(
     "proposal_builder",
     execution_router,
-    {
-        "execute": "wait_for_approval",
+    {       # 🔥 routine flow
+        "wait_for_approval": "wait_for_approval",  # 🔥 others
         "no_execute": END,
     },
 )
@@ -269,5 +278,6 @@ graph.add_node('daily_routine_planner_node',daily_routine_planner_node)
 graph.add_edge('planning_decider_node','daily_context_builder_node')
 graph.add_edge('daily_context_builder_node','daily_routine_planner_node')
 graph.add_edge('daily_routine_planner_node','proposal_builder')
+
 # ---------------- COMPILE ----------------
 chatbot = graph.compile(checkpointer=checkpointer)

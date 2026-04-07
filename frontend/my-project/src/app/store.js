@@ -45,6 +45,9 @@ export const store = configureStore({
     [subtasksApi.reducerPath]: subtasksApi.reducer,
     [activitiesApi.reducerPath]: activitiesApi.reducer,
     [fitnessApi.reducerPath]: fitnessApi.reducer,
+    [eventsApi.reducerPath]: eventsApi.reducer,
+    [googleAuthApi.reducerPath]: googleAuthApi.reducer,
+    [userApi.reducerPath]: userApi.reducer,
   },
   
 
@@ -59,7 +62,10 @@ export const store = configureStore({
       tasksApi.middleware,
       subtasksApi.middleware,
       activitiesApi.middleware,
-      fitnessApi.middleware// ✅ ADD
+      fitnessApi.middleware,// ✅ ADD
+      eventsApi.middleware,
+      googleAuthApi.middleware,
+      userApi.middleware
     ),
 
   devTools: import.meta.env.DEV,
