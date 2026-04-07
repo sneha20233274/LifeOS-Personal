@@ -1,5 +1,4 @@
-# backend/app/main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.database import engine, Base
@@ -37,25 +36,40 @@ from app.models.routine_event import RoutineEvent
 from app.models.reminder import Reminder
 
 from app.core.scheduler import start_scheduler
-Base.metadata.create_all(bind=engine)
 
+# ✅ CREATE APP FIRST
 app = FastAPI(title="Routine Planner")
-@app.on_event("startup")
-def startup_event():
-    print("🚀 Scheduler starting...")
-    start_scheduler()
-    print("✅ Scheduler started")
 
+# ✅ ADD CORS IMMEDIATELY AFTER APP CREATION
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://lifeos-frontend-hjm3.onrender.com"
+        "https://lifeos-frontend-hjm3.onrender.com",
+        "http://localhost:5173",  # local testing
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ✅ HANDLE PREFLIGHT (IMPORTANT FIX)
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(request: Request):
+    return {}
+
+# ✅ STARTUP EVENT (MOVE DB INIT HERE)
+@app.on_event("startup")
+def startup_event():
+    print("🚀 Starting app...")
+
+    # move DB creation here
+    Base.metadata.create_all(bind=engine)
+
+    print("🚀 Scheduler starting...")
+    start_scheduler()
+    print("✅ Scheduler started")
+
+# ✅ ROUTES
 app.include_router(auth_routes.router, prefix="/auth")
 app.include_router(user_routes.router, prefix="/users")
 app.include_router(criteria_routes.router, prefix="/criteria")
@@ -67,7 +81,7 @@ app.include_router(analytics_routes.router, prefix="/analytics")
 app.include_router(proposal_routes.router, prefix="/proposals")
 app.include_router(agent_routes.router, prefix="/agent")
 app.include_router(chat_routes.router, prefix="/chat")
-app.include_router(routine_event_routes.router , prefix='/events')
+app.include_router(routine_event_routes.router, prefix='/events')
 app.include_router(reminder_routes.router)
-app.include_router(fitness.router,prefix="/fitness")
-app.include_router(google_auth.router , prefix='/integrations/google')
+app.include_router(fitness.router, prefix="/fitness")
+app.include_router(google_auth.router, prefix='/integrations/google')
