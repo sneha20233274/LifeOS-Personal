@@ -1,6 +1,6 @@
 import { categoryConfigs } from "../app/categoryConfig";
 
-import { Card } from "./ui/card";
+import { Card } from "./ui/Card";
 import { useEffect } from "react";
 import {
   useGetAnalyticsMutation,
