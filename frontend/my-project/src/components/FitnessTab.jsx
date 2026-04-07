@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Dumbbell, Menu, Settings } from "lucide-react";
 
 import { Button } from "./ui/Button";
-import { TimelineExercise } from "./TimelineExercise";
+import { TimelineExercise } from "./TimeLineExercise";
 import { FitnessIntroAnimation } from "./FitnessIntroAnimation";
 import { CelebrationModal } from "./CelebrationModal";
 
