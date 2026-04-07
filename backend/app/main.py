@@ -48,7 +48,9 @@ def startup_event():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # 🔒 ONE origin
+    allow_origins=[
+        "https://lifeos-frontend-hjm3.onrender.com"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
