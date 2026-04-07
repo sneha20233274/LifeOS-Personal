@@ -2,7 +2,7 @@ import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { setCredentials, logout } from "../store/authSlice";
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:8000",
+  baseUrl: "https://lifeos-personal-6.onrender.com",
   prepareHeaders: (headers) => {
     const auth = JSON.parse(localStorage.getItem("auth"));
 
