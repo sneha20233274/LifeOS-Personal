@@ -16,73 +16,63 @@ from my_agent.schemas.fitness import (
     CardioDetails,
     MobilityDetails,
 )
-from my_agent.schemas.routine_structure import RoutineStructurerNodeResponse,PlanningDeciderOutput
+from my_agent.schemas.routine_structure import RoutineStructurerNodeResponse, PlanningDeciderOutput
 from my_agent.schemas.fitness import DayTimelineSkeleton
 from my_agent.tools.date_tools import (
     get_today_date,
     add_days_to_date
 )
 
+import os
+
+load_dotenv()
+
+# --------------------------------------------------
+# GLOBAL API KEY (IMPORTANT)
+# --------------------------------------------------
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+def get_llm(model="openai/gpt-oss-120b", temperature=0.7):
+    return ChatGroq(
+        model=model,
+        temperature=temperature,
+        api_key=GROQ_API_KEY
+    )
+
+# --------------------------------------------------
+# Tools
+# --------------------------------------------------
 tools_date = [
     get_today_date,
     add_days_to_date
 ]
-load_dotenv()
 
-
-# --------------------------------------------------
-# JSON transport tool (MANDATORY for Groq structured output)
-# --------------------------------------------------
 @tool
 def json(**kwargs):
     """Transport-only tool for structured outputs."""
     return kwargs
 
-
 # --------------------------------------------------
 # Base LLMs
 # --------------------------------------------------
-base_llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0.7
-)
+base_llm = get_llm("openai/gpt-oss-120b", 0.7)
 
-plan_mode = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0.3
-).bind_tools(tools_date).with_structured_output(PlanningDeciderOutput)
+plan_mode = get_llm("openai/gpt-oss-120b", 0.3)\
+    .bind_tools(tools_date)\
+    .with_structured_output(PlanningDeciderOutput)
 
-aggregation_llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0.1
-)
-analysis_llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0.5
-)
-goal_prompt_llm = ChatGroq(
-    model="llama-3.1-8b-instant",
-    temperature=0.1
-)
+aggregation_llm = get_llm("openai/gpt-oss-120b", 0.1)
+analysis_llm = get_llm("openai/gpt-oss-120b", 0.5)
 
-evaluator_llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0.3
-)
+goal_prompt_llm = get_llm("llama-3.1-8b-instant", 0.1)
 
+evaluator_llm = get_llm("openai/gpt-oss-120b", 0.3)
+routine_llm = get_llm("openai/gpt-oss-120b", 0.3)
+fitness_planner_llm = get_llm("openai/gpt-oss-120b", 0.3)
 
-routine_llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0.3
-)
-
-fitness_planner_llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0.3
-)
-
-
-
+# --------------------------------------------------
+# Structured Outputs
+# --------------------------------------------------
 goal_prompt_structured_llm = (
     goal_prompt_llm
     .bind_tools([json])
@@ -114,62 +104,54 @@ diet_planer_llm = (
 )
 
 structured_fitness_planer_llm = (
-    fitness_planner_llm.bind_tools([json])
+    fitness_planner_llm
+    .bind_tools([json])
     .with_structured_output(FitnessPlan)
 )
 
 weekly_focus_llm = (
-    ChatGroq(
-        model="openai/gpt-oss-120b",
-        temperature=0.1,  # low for determinism
-    ).bind_tools([json])
+    get_llm("openai/gpt-oss-120b", 0.1)
+    .bind_tools([json])
     .with_structured_output(WeeklyFocus)
 )
 
-
 day_timeline_llm = (
-    ChatGroq(
-        model="openai/gpt-oss-120b",
-        temperature=0.2,
-    ).bind_tools([json])
+    get_llm("openai/gpt-oss-120b", 0.2)
+    .bind_tools([json])
     .with_structured_output(DayTimelineSkeleton)
 )
 
-
-
-
 strength_detail_llm = (
-    ChatGroq(
-        model="openai/gpt-oss-120b",
-        temperature=0.2,
-    ).bind_tools([json])
+    get_llm("openai/gpt-oss-120b", 0.2)
+    .bind_tools([json])
     .with_structured_output(StrengthDetails)
 )
 
 cardio_detail_llm = (
-    ChatGroq(
-        model="openai/gpt-oss-120b",
-        temperature=0.2,
-    ).bind_tools([json])
+    get_llm("openai/gpt-oss-120b", 0.2)
+    .bind_tools([json])
     .with_structured_output(CardioDetails)
 )
 
 mobility_detail_llm = (
-    ChatGroq(model="openai/gpt-oss-120b", temperature=0.2)
+    get_llm("openai/gpt-oss-120b", 0.2)
     .bind_tools([json])
     .with_structured_output(MobilityDetails)
 )
 
 activity_structured_llm = (
-    base_llm.bind_tools([json])
+    base_llm
+    .bind_tools([json])
     .with_structured_output(ActivityCreateList)
 )
+
 analytics_structured_llm = (
     aggregation_llm
     .with_structured_output(AggregationOutput)
 )
+
 routine_structurer_llm = (
-    analysis_llm.
-    bind_tools([json]).
-    with_structured_output(RoutineStructurerNodeResponse)
+    analysis_llm
+    .bind_tools([json])
+    .with_structured_output(RoutineStructurerNodeResponse)
 )

@@ -83,7 +83,7 @@ def run_chat(request: dict, db: Session, user_id: int):
                 "content": "✨ Your daily routine is ready! Opening DayCraft..."
             }
         ],
-        "redirect": "/daycraft"
+        "redirect": "/calender"
       }
 
     # =====================================================
