@@ -13,7 +13,7 @@ import PasswordSecurity from "./PasswordSecurity";
 import GoalsTasksTabs from "./GoalsTasksTabs";
 import { useChangePasswordMutation } from "../services/authApi";
 
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/Avatar";
 import { Badge } from "./ui/Badge";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 
