@@ -135,12 +135,12 @@ useEffect(() => {
    });
 }, []);
    
-  const isLoading =
-    !categoryData &&
-    !productivityData &&
-    !weeklyApiData &&
-    !trendApiData &&
-    !avgData;
+ const isLoading =
+   !categoryData ||
+   !productivityData ||
+   !weeklyApiData ||
+   !trendApiData ||
+   !avgData;
  if (isLoading) {
     return <div className="text-white p-6">Loading...</div>;
  }

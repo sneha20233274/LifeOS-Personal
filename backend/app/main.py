@@ -44,8 +44,8 @@ app = FastAPI(title="Routine Planner")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://lifeos-frontend-hjm3.onrender.com",
-        "http://localhost:5173",  # local testing
+        "https://lifeos-frontend-hjm3.onrender.com"
+        
     ],
     allow_credentials=True,
     allow_methods=["*"],
