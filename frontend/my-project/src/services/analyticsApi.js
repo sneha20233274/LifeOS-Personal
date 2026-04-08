@@ -6,7 +6,7 @@ export const analyticsApi = createApi({
   baseQuery,
 
   endpoints: (builder) => ({
-    getAnalytics: builder.mutation({
+    getAnalytics: builder.query({
       query: (body) => ({
         url: "/analytics/aggregate",
         method: "POST",
@@ -14,7 +14,7 @@ export const analyticsApi = createApi({
       }),
     }),
 
-    getProductivity: builder.mutation({
+    getProductivity: builder.query({
       query: (body) => ({
         url: "/analytics/productivity",
         method: "POST",
@@ -22,7 +22,7 @@ export const analyticsApi = createApi({
       }),
     }),
 
-    getWeekly: builder.mutation({
+    getWeekly: builder.query({
       query: (body) => ({
         url: "/analytics/weekly",
         method: "POST",
@@ -30,7 +30,7 @@ export const analyticsApi = createApi({
       }),
     }),
 
-    getTrend: builder.mutation({
+    getTrend: builder.query({
       query: (body) => ({
         url: "/analytics/trend",
         method: "POST",
@@ -38,7 +38,7 @@ export const analyticsApi = createApi({
       }),
     }),
 
-    getProductivityAverage: builder.mutation({
+    getProductivityAverage: builder.query({
       query: (body) => ({
         url: "/analytics/productivity-average",
         method: "POST",
@@ -46,8 +46,7 @@ export const analyticsApi = createApi({
       }),
     }),
 
-    // 🔥 NEW INSIGHTS API
-    getInsights: builder.mutation({
+    getInsights: builder.query({
       query: (body) => ({
         url: "/analytics/insights",
         method: "POST",
@@ -58,10 +57,10 @@ export const analyticsApi = createApi({
 });
 
 export const {
-  useGetAnalyticsMutation,
-  useGetProductivityMutation,
-  useGetWeeklyMutation,
-  useGetTrendMutation,
-  useGetProductivityAverageMutation,
-  useGetInsightsMutation, // ✅ NEW EXPORT
+  useGetAnalyticsQuery,
+  useGetProductivityQuery,
+  useGetWeeklyQuery,
+  useGetTrendQuery,
+  useGetProductivityAverageQuery,
+  useGetInsightsQuery,
 } = analyticsApi;

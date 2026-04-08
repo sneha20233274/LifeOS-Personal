@@ -48,6 +48,7 @@ export const store = configureStore({
     [eventsApi.reducerPath]: eventsApi.reducer,
     [googleAuthApi.reducerPath]: googleAuthApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
+    [analyticsApi.reducerPath]: analyticsApi.reducer,
   },
   
 
@@ -65,6 +66,7 @@ export const store = configureStore({
       fitnessApi.middleware,// ✅ ADD
       eventsApi.middleware,
       googleAuthApi.middleware,
+      analyticsApi.middleware,
       userApi.middleware
     ),
 
