@@ -115,6 +115,7 @@ def proposal_builder_node(state: ChatState):
         })
 
     return {
-        "proposals": proposals,
-        "requires_execution": len(proposals) > 0
-    }
+    **state,  # 🔥 KEEP PREVIOUS STATE
+    "proposals": proposals,
+    "requires_execution": len(proposals) > 0
+}
