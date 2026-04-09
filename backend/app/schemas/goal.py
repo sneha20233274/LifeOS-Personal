@@ -2,6 +2,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import date, datetime
+from typing import Union
 
 
 class GoalCreate(BaseModel):
@@ -13,7 +14,7 @@ class GoalCreate(BaseModel):
 
     # user-controlled metadata
     importance_level: int = Field(default=1, ge=1, le=5)
-    motivations: Optional[List[str]] = None
+    motivations: Union[str, list[str], None] = None
 
 
 class GoalUpdate(BaseModel):
