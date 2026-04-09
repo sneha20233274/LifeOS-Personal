@@ -14,8 +14,10 @@ Rules:
 - importance_level:
   - infer urgency (1 = casual, 5 = very important)
 - motivations:
-  - infer clear motivations if stated or obvious
-  - otherwise null
+  - MUST be a list of strings
+  - even if only one motivation → return as list
+  - example: ["Improve system efficiency"]
+  - if none → return null
 
 Do NOT ask questions.
 Do NOT add extra fields.

@@ -1,5 +1,14 @@
 from my_agent.chatstate import ChatState
-from app.utils.date_corruption_catch_helper import assert_deadline_type
+
+
+def to_dict(obj):
+    if obj is None:
+        return {}
+    if isinstance(obj, dict):
+        return obj
+    if hasattr(obj, "model_dump"):
+        return obj.model_dump()
+    return {}
 
 
 def proposal_builder_node(state: ChatState):
@@ -11,7 +20,7 @@ def proposal_builder_node(state: ChatState):
     if state.get("structured_goal"):
         proposals.append({
             "action_type": "create_goal",
-            "payload": state["structured_goal"]
+            "payload": to_dict(state["structured_goal"])
         })
 
     # ---------------------------
@@ -19,8 +28,8 @@ def proposal_builder_node(state: ChatState):
     # ---------------------------
     if state.get("routine_tasks"):
         for task in state["routine_tasks"]:
+            task = to_dict(task)
 
-            # ✅ SAFE ACCESS
             task_key = task.get("temp_task_key")
 
             proposals.append({
@@ -36,6 +45,8 @@ def proposal_builder_node(state: ChatState):
 
             # ---- Subtasks ----
             for subtask in task.get("subtasks", []):
+                subtask = to_dict(subtask)
+
                 proposals.append({
                     "action_type": "create_subtask",
                     "payload": {
@@ -51,28 +62,26 @@ def proposal_builder_node(state: ChatState):
                 })
 
     # ---------------------------
-    # 3️⃣ Routine Events (🔥 FIXED)
+    # 3️⃣ Routine Events
     # ---------------------------
     if state.get("routine_structure"):
-        routine = state.get("routine_structure", {})
+        routine = to_dict(state.get("routine_structure"))
         events = routine.get("events", [])
 
         for event in events:
+            event = to_dict(event)
+
             proposals.append({
                 "action_type": "schedule_routine_event",
                 "payload": {
                     "temp_event_key": event.get("temp_event_key"),
-
                     "title": event.get("title"),
                     "description": event.get("description"),
-
                     "start_time": event.get("start_time"),
                     "end_time": event.get("end_time"),
                     "is_all_day": event.get("is_all_day"),
-
                     "category": event.get("category"),
                     "priority": event.get("priority"),
-
                     "location_or_link": event.get("location_or_link"),
                     "source": event.get("source"),
                 }
@@ -83,6 +92,8 @@ def proposal_builder_node(state: ChatState):
     # ---------------------------
     if state.get("activity_create"):
         for activity in state["activity_create"]:
+            activity = to_dict(activity)
+
             proposals.append({
                 "action_type": "log_activity",
                 "payload": {
@@ -102,7 +113,7 @@ def proposal_builder_node(state: ChatState):
     if state.get("weekly_routine"):
         proposals.append({
             "action_type": "create_weekly_fitness_routine",
-            "payload": state["weekly_routine"]
+            "payload": to_dict(state["weekly_routine"])
         })
 
     # ---------------------------
@@ -111,11 +122,11 @@ def proposal_builder_node(state: ChatState):
     if state.get("diet_plan"):
         proposals.append({
             "action_type": "update_diet_plan",
-            "payload": state["diet_plan"]
+            "payload": to_dict(state["diet_plan"])
         })
 
     return {
-    **state,  # 🔥 KEEP PREVIOUS STATE
-    "proposals": proposals,
-    "requires_execution": len(proposals) > 0
-}
+        **state,
+        "proposals": proposals,
+        "requires_execution": len(proposals) > 0
+    }

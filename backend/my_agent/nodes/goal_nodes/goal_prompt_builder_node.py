@@ -18,6 +18,12 @@ def goal_prompt_builder_node(state:ChatState
     ]
     print("Messages to goal LLM:", messages)
     goal: GoalCreate = goal_prompt_structured_llm.invoke(messages)
+
+# 🔥 SAFETY FIX
+    if isinstance(goal.motivations, str):
+      goal.motivations = [goal.motivations]
+
+    
     print("Goal LLM output:", goal)
     # update state with structured goal
     new_state = {
