@@ -5,10 +5,9 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 
 import { GoalProposal } from "./GoalProposal";
-import { TaskProposal } from "./TaskProposal";
 import { ActivityProposal } from "./ActivityProposal";
-import { useSubmitProposalsMutation } from "../services/ProposalsApi";
 import { FitnessProposal } from "./FitnessProposal";
+import { useSubmitProposalsMutation } from "../services/ProposalsApi";
 
 export function ProposalsPage() {
   const location = useLocation();
@@ -41,14 +40,14 @@ export function ProposalsPage() {
 
   if (!proposalsState.length) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-10 h-10 animate-spin text-emerald-600" />
       </div>
     );
   }
 
   /* -----------------------------
-     HELPERS (UNCHANGED)
+     HELPERS
   ------------------------------ */
   const updateEntity = (proposal_id, payloadPatch) => {
     setProposalsState((prev) =>
@@ -81,12 +80,10 @@ export function ProposalsPage() {
   };
 
   /* -----------------------------
-     DERIVED DATA
+     GROUPING (🔥 FIX)
   ------------------------------ */
   const goals = proposalsState.filter((p) => p.action_type === "create_goal");
-
   const tasks = proposalsState.filter((p) => p.action_type === "create_task");
-
   const subtasks = proposalsState.filter(
     (p) => p.action_type === "create_subtask",
   );
@@ -94,126 +91,81 @@ export function ProposalsPage() {
   const activities = proposalsState.filter(
     (p) => p.action_type === "log_activity",
   );
+
   const fitnessProposal = proposalsState.find(
     (p) => p.action_type === "create_weekly_fitness_routine",
   );
 
   /* -----------------------------
-     PROPOSAL ROOTS (KEY CHANGE)
+     BUILD TREE (🔥 CORE FIX)
   ------------------------------ */
-  const proposalRoots = [
-    ...(fitnessProposal ? [{ type: "fitness", data: fitnessProposal }] : []),
+  const goalTree = goals.map((goal) => {
+    const tasksForGoal = tasks; // (can filter later if goal_id exists)
 
-    ...goals.map((g) => ({ type: "goal", data: g })),
+    const enrichedTasks = tasksForGoal.map((task) => ({
+      ...task,
+      subtasks: subtasks.filter(
+        (s) => s.payload?.depends_on_task_key === task.payload?.temp_task_key,
+      ),
+    }));
 
-    ...tasks
-      .filter((t) => !t.payload?.goal_id)
-      .map((t) => ({ type: "task", data: t })),
-
-    ...activities.map((a) => ({ type: "activity", data: a })),
-  ];
+    return {
+      ...goal,
+      tasks: enrichedTasks,
+    };
+  });
 
   /* =============================
      UI
   ============================== */
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-purple-50 text-gray-900">
-      <Toaster position="top-right" richColors />
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-purple-50">
+      <Toaster />
 
       <div className="max-w-7xl mx-auto px-6 py-14">
         {/* HEADER */}
         <div className="mb-12 flex items-center gap-4">
-          <div className="p-4 rounded-2xl bg-emerald-600 text-white shadow-lg">
-            <Sparkles className="w-8 h-8" />
-          </div>
-          <div>
-            <h1 className="text-4xl font-bold">Life OS – Proposal Review</h1>
-            <p className="text-gray-600 mt-1">
-              Review and approve your AI-generated execution plan
-            </p>
-          </div>
+          <Sparkles className="w-8 h-8 text-emerald-600" />
+          <h1 className="text-3xl font-bold">Proposal Review</h1>
         </div>
 
-        {/* SESSION CARD */}
-        <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 mb-10">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-semibold">
-                {proposal_name ?? "AI GENERATED EXECUTION PLAN"}
-              </h2>
-              {created_at && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Generated at {new Date(created_at).toLocaleString()}
-                </p>
-              )}
-            </div>
-            <div className="text-right">
-              <div className="text-4xl font-bold text-emerald-600">
-                {goals.length}
-              </div>
-              <div className="text-sm text-gray-500">Active Goals</div>
-            </div>
-          </div>
-        </div>
+        {/* GOALS */}
+        <div className="space-y-8">
+          <AnimatePresence>
+            {goalTree.map((goal) => (
+              <GoalProposal
+                key={goal.proposal_id}
+                goal={goal}
+                onUpdate={updateEntity}
+                onStatusChange={updateStatus}
+              />
+            ))}
 
-        {/* CONTENT */}
-        <div className="space-y-10">
-          <AnimatePresence mode="popLayout">
-            {proposalRoots.map((root) => {
-              switch (root.type) {
-                case "goal":
-                  return (
-                    <GoalProposal
-                      key={root.data.proposal_id}
-                      goal={root.data}
-                      allTasks={tasks}
-                      allSubtasks={subtasks}
-                      onUpdate={updateEntity}
-                      onStatusChange={updateStatus}
-                    />
-                  );
+            {/* ACTIVITIES (UNCHANGED) */}
+            {activities.map((a) => (
+              <ActivityProposal
+                key={a.proposal_id}
+                activity={a}
+                onUpdate={updateEntity}
+                onStatusChange={updateStatus}
+              />
+            ))}
 
-                case "task":
-                  return (
-                    <TaskProposal
-                      key={root.data.proposal_id}
-                      task={root.data}
-                      allSubtasks={subtasks}
-                      onUpdate={updateEntity}
-                      onStatusChange={updateStatus}
-                    />
-                  );
-
-                case "activity":
-                  return (
-                    <ActivityProposal
-                      key={root.data.proposal_id}
-                      activity={root.data}
-                      onUpdate={updateEntity}
-                      onStatusChange={updateStatus}
-                    />
-                  );
-                case "fitness":
-                  return (
-                    <FitnessProposal
-                      key={root.data.proposal_id}
-                      proposal={root.data}
-                      onStatusChange={updateStatus}
-                    />
-                  );
-
-                default:
-                  return null;
-              }
-            })}
+            {/* FITNESS (UNCHANGED) */}
+            {fitnessProposal && (
+              <FitnessProposal
+                proposal={fitnessProposal}
+                onStatusChange={updateStatus}
+              />
+            )}
           </AnimatePresence>
         </div>
 
         {/* SUBMIT */}
-        <div className="mt-14 flex justify-end">
+        <div className="mt-10 text-right">
           <button
             onClick={submitAllChanges}
-            className="px-10 py-4 rounded-2xl bg-emerald-600 text-white font-semibold text-lg shadow-lg hover:bg-emerald-700 transition"
+            className="px-8 py-3 bg-emerald-600 text-white rounded-xl"
           >
             Execute Plan
           </button>
