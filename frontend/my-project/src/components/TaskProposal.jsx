@@ -14,12 +14,19 @@ import { SubtaskProposal } from "./SubtaskProposal";
 export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [localPayload, setLocalPayload] = useState(task.payload);
+  const [localPayload, setLocalPayload] = useState(task.payload || {});
 
   /* -----------------------------
-     🔥 FIXED DATA SOURCE
+     ✅ FIXED LOGIC (SAFE + FLEXIBLE)
   ------------------------------ */
-  const subtasksForTask = allSubtasks || [];
+
+  const subtasksForTask =
+    task.subtasks || // ✅ new backend format
+    allSubtasks?.filter(
+      (subtask) =>
+        subtask.payload?.depends_on_task_key === task.payload?.temp_task_key,
+    ) ||
+    []; // ✅ old logic fallback
 
   const save = () => {
     onUpdate(task.proposal_id, localPayload);
@@ -40,80 +47,165 @@ export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className={`relative border-l-4 ${statusColors[status]} rounded-xl p-5 shadow-md`}
+      className={`relative border-l-4 ${statusColors[status]} rounded-xl p-5 shadow-md hover:shadow-lg transition-all`}
     >
-      {/* HEADER */}
-      <div className="flex justify-between mb-4">
-        <div>
+      {/* ================= HEADER ================= */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex-1 min-w-0">
           {isEditing ? (
-            <div>
+            <div className="space-y-3">
               {Object.entries(localPayload).map(([key, value]) => {
                 if (key === "subtasks") return null;
 
                 return (
-                  <input
-                    key={key}
-                    value={value}
-                    onChange={(e) =>
-                      setLocalPayload((prev) => ({
-                        ...prev,
-                        [key]: e.target.value,
-                      }))
-                    }
-                    className="border p-2 mb-2 w-full"
-                  />
+                  <div key={key}>
+                    <label className="block text-xs font-medium text-gray-600 mb-1 capitalize">
+                      {key.replace(/_/g, " ")}
+                    </label>
+                    <input
+                      value={value || ""}
+                      onChange={(e) =>
+                        setLocalPayload((prev) => ({
+                          ...prev,
+                          [key]: e.target.value,
+                        }))
+                      }
+                      className="w-full px-4 py-2 border-2 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 );
               })}
 
-              <button onClick={save}>Save</button>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={save}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg"
+                >
+                  <Save className="w-4 h-4" />
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setLocalPayload(task.payload || {});
+                    setIsEditing(false);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Cancel
+                </button>
+              </div>
             </div>
           ) : (
             <>
-              <h3 className="font-bold text-lg">{task.payload.task_name}</h3>
-              <p className="text-sm text-gray-600">
-                {task.payload.description}
-              </p>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-bold text-gray-900">
+                  {task.payload?.task_name || task.task_name || "Task"}
+                </h3>
 
-              <p className="text-xs mt-1">{subtasksForTask.length} subtasks</p>
+                {subtasksForTask.length > 0 && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
+                    {subtasksForTask.length} subtask
+                    {subtasksForTask.length !== 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+
+              {(task.payload?.description || task.description) && (
+                <p className="text-sm text-gray-700">
+                  {task.payload?.description || task.description}
+                </p>
+              )}
             </>
           )}
         </div>
 
         {!isEditing && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => onStatusChange(task.proposal_id, "APPROVED")}
-            >
-              <Check />
-            </button>
+          <div className="flex items-center gap-2">
+            {status === "PENDING" && (
+              <>
+                <button
+                  onClick={() => onStatusChange(task.proposal_id, "APPROVED")}
+                  className="p-2 bg-green-100 text-green-600 rounded-lg"
+                >
+                  <Check />
+                </button>
 
-            <button onClick={() => setIsEditing(true)}>
-              <Edit2 />
-            </button>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="p-2 bg-blue-100 text-blue-600 rounded-lg"
+                  title="Edit Task"
+                >
+                  <Edit2 className="w-5 h-5" />
+                </button>
+              </>
+            )}
 
             <button
               onClick={() => onStatusChange(task.proposal_id, "REJECTED")}
+              className="p-2 bg-red-100 text-red-600 rounded-lg"
             >
               <Trash2 />
             </button>
+
+            {(status === "REJECTED" || status === "APPROVED") && (
+              <button
+                onClick={() => onStatusChange(task.proposal_id, "PENDING")}
+                className="p-2 bg-gray-200 text-gray-700 rounded-lg"
+              >
+                <XCircle />
+              </button>
+            )}
+
+            {subtasksForTask.length > 0 && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="p-2 bg-gray-100 text-gray-600 rounded-lg"
+                title={isExpanded ? "Collapse" : "Expand"}
+              >
+                {isExpanded ? (
+                  <ChevronUp className="w-5 h-5" />
+                ) : (
+                  <ChevronDown className="w-5 h-5" />
+                )}
+              </button>
+            )}
           </div>
         )}
       </div>
 
-      {/* SUBTASKS */}
+      {/* ================= APPROVED BADGE ================= */}
+      {status === "APPROVED" && !isEditing && (
+        <div className="absolute top-3 right-3">
+          <div className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white text-xs rounded-full font-medium">
+            <Check className="w-3 h-3" />
+            Approved
+          </div>
+        </div>
+      )}
+
+      {/* ================= SUBTASKS ================= */}
       <AnimatePresence>
-        {isExpanded && subtasksForTask.length > 0 && (
-          <motion.div className="pl-4 border-l mt-4 space-y-2">
-            {subtasksForTask.map((subtask) => (
-              <SubtaskProposal
-                key={subtask.proposal_id}
-                subtask={subtask}
-                onUpdate={(patch) => onUpdate(subtask.proposal_id, patch)}
-                onStatusChange={(status) =>
-                  onStatusChange(subtask.proposal_id, status)
-                }
-              />
-            ))}
+        {isExpanded && subtasksForTask.length > 0 && !isEditing && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-4 space-y-3 pl-4 border-l-2 border-gray-200"
+          >
+            <AnimatePresence mode="popLayout">
+              {subtasksForTask.map((subtask) => (
+                <SubtaskProposal
+                  key={subtask.proposal_id}
+                  subtask={subtask}
+                  onUpdate={(patch) => onUpdate(subtask.proposal_id, patch)}
+                  onStatusChange={(status) =>
+                    onStatusChange(subtask.proposal_id, status)
+                  }
+                />
+              ))}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
