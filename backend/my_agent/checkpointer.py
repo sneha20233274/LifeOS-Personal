@@ -10,7 +10,7 @@ if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL not set")
 
 pool = ConnectionPool(
-    conninfo=DATABASE_URL,
+    conninfo=DATABASE_URL + "&prepare_threshold=0",  # ✅ FIX
     min_size=1,
     max_size=10,
 )
