@@ -5,9 +5,10 @@ from app.core.config import DATABASE_URL
 engine = create_engine(
     DATABASE_URL,
     connect_args={
-        "sslmode": "require",            # 🔥 ADD THIS LINE (FIX)
+        "sslmode": "require",
+        "prepare_threshold": None   # ✅ ONLY THIS (important)
     },
-    pool_pre_ping=True,            # 🔥 recommended
+    pool_pre_ping=True,
     future=True
 )
 
