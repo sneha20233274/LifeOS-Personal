@@ -5,7 +5,7 @@ from app.core.config import DATABASE_URL
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
-    connect_args={"prepare_threshold": 0}
+    connect_args={"prepare_threshold": 0},
     future=True
 )
 
