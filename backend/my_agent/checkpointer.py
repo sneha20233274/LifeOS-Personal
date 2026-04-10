@@ -1,19 +1,19 @@
 from langgraph.checkpoint.postgres import PostgresSaver
-from psycopg_pool import ConnectionPool
 from dotenv import load_dotenv
-load_dotenv()
-
+import psycopg
 import os
+
+load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL not set")
 
-pool = ConnectionPool(
-    conninfo=DATABASE_URL + "&prepare_threshold=0",  # ✅ FIX
-    min_size=1,
-    max_size=10,
+# ✅ Direct connection (NO psycopg_pool)
+conn = psycopg.connect(
+    DATABASE_URL,
+    prepare_threshold=0   # ✅ required for Supabase pooler
 )
 
-checkpointer = PostgresSaver(conn=pool)
-
+# ✅ Pass direct connection to LangGraph
+checkpointer = PostgresSaver(conn=conn)
