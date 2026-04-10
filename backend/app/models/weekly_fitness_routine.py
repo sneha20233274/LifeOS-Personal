@@ -1,5 +1,5 @@
 # app/models/weekly_fitness_routine.py
-from sqlalchemy import Column, String, DateTime, Enum, JSON
+from sqlalchemy import Column, String, DateTime, Enum, JSON,Integer
 from app.core.database import Base
 from datetime import datetime
 import enum
@@ -14,7 +14,7 @@ class WeeklyFitnessRoutineDB(Base):
     __tablename__ = "weekly_fitness_routines"
 
     routine_id = Column(String, primary_key=True)
-    user_id = Column(String, index=True, nullable=False)
+    user_id = Column(Integer, index=True, nullable=False) 
 
     routine_name = Column(String, nullable=False)
 
