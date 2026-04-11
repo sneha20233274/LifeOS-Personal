@@ -34,7 +34,7 @@ from my_agent.models.agent_run import AgentRun
 from my_agent.models.approval_decision import ApprovalDecision
 from app.models.routine_event import RoutineEvent
 from app.models.reminder import Reminder
-
+from sqlalchemy import text
 from app.core.scheduler import start_scheduler
 
 # ✅ CREATE APP FIRST
@@ -59,17 +59,34 @@ async def preflight_handler(request: Request):
 
 # ✅ STARTUP EVENT (MOVE DB INIT HERE)
 @app.on_event("startup")
+
 def startup_event():
     print("🚀 Starting app...")
 
-    # move DB creation here
-    Base.metadata.create_all(bind=engine)
+    # ✅ SAFE DB INIT
+    try:
+        print("🔌 Trying DB connection...")
+        Base.metadata.create_all(bind=engine)
+        print("✅ Tables created successfully")
+    except Exception as e:
+        print("❌ DB CONNECTION FAILED:", e)
 
     print("🚀 Scheduler starting...")
     start_scheduler()
     print("✅ Scheduler started")
 
 # ✅ ROUTES
+
+
+@app.get("/db-test")
+def test_db():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT 1")).fetchall()
+            return {"status": "connected", "result": result}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+    
 app.include_router(auth_routes.router, prefix="/auth")
 app.include_router(user_routes.router, prefix="/users")
 app.include_router(criteria_routes.router, prefix="/criteria")
