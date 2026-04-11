@@ -147,7 +147,6 @@ activity_structured_llm = (
 
 analytics_structured_llm = (
     aggregation_llm
-    .bind_tools([json])
     .with_structured_output(AggregationOutput)
 )
 
