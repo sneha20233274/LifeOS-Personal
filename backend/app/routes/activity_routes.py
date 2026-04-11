@@ -23,7 +23,7 @@ def api_get_activities(
 
     activities = (
         db.query(Activity)
-        .filter(Activity.user_id == 5)
+        .filter(Activity.user_id == current_user.user_id)
         .order_by(Activity.start_ts.desc())
         .all()
     )
