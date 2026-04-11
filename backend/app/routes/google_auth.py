@@ -62,7 +62,7 @@ def google_login(user: User = Depends(get_current_user)):
 
     state = sign_state(payload)
 
-    flow = Flow.from_client_secrets_file(
+    flow = Flow.from_client_config(
         credentials_info,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI,
@@ -96,7 +96,7 @@ def google_callback(
 
     user_id = payload["user_id"]
 
-    flow = Flow.from_client_secrets_file(
+    flow = Flow.from_client_config(
         credentials_info,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI,
