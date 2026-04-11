@@ -78,12 +78,16 @@ def startup_event():
 # ✅ ROUTES
 
 
+
 @app.get("/db-test")
 def test_db():
     try:
         with engine.connect() as conn:
             result = conn.execute(text("SELECT 1")).fetchall()
-            return {"status": "connected", "result": result}
+            return {
+                "status": "connected",
+                "result": [list(row) for row in result]  # ✅ FIX
+            }
     except Exception as e:
         return {"status": "failed", "error": str(e)}
     
