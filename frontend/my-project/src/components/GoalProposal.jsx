@@ -21,24 +21,26 @@ export function GoalProposal({
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [localPayload, setLocalPayload] = useState(goal.payload);
+  const [localPayload, setLocalPayload] = useState(goal.payload || {});
 
   /* -----------------------------
-     YOUR LOGIC (UNCHANGED)
+     ✅ FIXED LOGIC (NO UI CHANGE)
   ------------------------------ */
 
-  const totalSubtasks = allTasks.reduce(
-    (acc, t) => acc + (t.payload.subtasks?.length || 0),
-    0
-  );
+  // Support both old + new backend formats
+  const tasks = goal.tasks || allTasks || [];
+
+  const totalSubtasks = tasks.reduce((acc, t) => {
+    return acc + (t.subtasks?.length || t.payload?.subtasks?.length || 0);
+  }, 0);
 
   const save = () => {
-   onUpdate(goal.proposal_id, localPayload);
+    onUpdate(goal.proposal_id, localPayload);
     setIsEditing(false);
   };
 
   /* -----------------------------
-     STATUS COLORS (UI ONLY)
+     STATUS COLORS (UI SAME)
   ------------------------------ */
   const statusColors = {
     PENDING:
@@ -70,7 +72,7 @@ export function GoalProposal({
                     {key.replace(/_/g, " ")}
                   </label>
                   <input
-                    value={value}
+                    value={value || ""}
                     onChange={(e) =>
                       setLocalPayload((prev) => ({
                         ...prev,
@@ -92,7 +94,7 @@ export function GoalProposal({
                 </button>
                 <button
                   onClick={() => {
-                    setLocalPayload(goal.payload);
+                    setLocalPayload(goal.payload || {});
                     setIsEditing(false);
                   }}
                   className="flex items-center gap-2 px-5 py-2.5 bg-gray-500 text-white rounded-xl"
@@ -109,17 +111,19 @@ export function GoalProposal({
                   <Target className="w-6 h-6 text-purple-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {goal.payload.goal_name || "Goal"}
+                  {goal.payload?.goal_name || goal.goal_name || "Goal"}
                 </h2>
               </div>
 
-              <p className="text-gray-700 mb-4">{goal.payload.description}</p>
+              <p className="text-gray-700 mb-4">
+                {goal.payload?.description || goal.description || ""}
+              </p>
 
               <div className="flex items-center gap-3 text-sm">
-                {allTasks.length > 0 && (
+                {tasks.length > 0 && (
                   <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full font-medium">
-                    {allTasks.length} task
-                    {allTasks.length !== 1 ? "s" : ""}
+                    {tasks.length} task
+                    {tasks.length !== 1 ? "s" : ""}
                   </span>
                 )}
                 {totalSubtasks > 0 && (
@@ -158,7 +162,7 @@ export function GoalProposal({
             >
               <Trash2 />
             </button>
-            {(goal.status === "REJECTED" || goal.status==="APPROVED") &&  (
+            {(goal.status === "REJECTED" || goal.status === "APPROVED") && (
               <button
                 onClick={() => onStatusChange(goal.proposal_id, "PENDING")}
                 className="p-3 bg-gray-200 text-gray-700 rounded-xl"
@@ -168,7 +172,7 @@ export function GoalProposal({
               </button>
             )}
 
-            {allTasks.length > 0 && (
+            {tasks.length > 0 && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="p-3 bg-gray-100 text-gray-600 rounded-xl"
@@ -196,7 +200,7 @@ export function GoalProposal({
 
       {/* ================= TASKS ================= */}
       <AnimatePresence>
-        {isExpanded && allTasks.length > 0 && !isEditing && (
+        {isExpanded && tasks.length > 0 && !isEditing && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
@@ -211,11 +215,11 @@ export function GoalProposal({
               <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
             </div>
 
-            {allTasks.map((task) => (
+            {tasks.map((task) => (
               <TaskProposal
                 key={task.proposal_id}
                 task={task}
-                allSubtasks={allSubtasks}
+                allSubtasks={task.subtasks || task.payload?.subtasks || []}
                 onUpdate={onUpdate}
                 onStatusChange={onStatusChange}
               />

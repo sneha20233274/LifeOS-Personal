@@ -4,7 +4,8 @@ from app.core.config import DATABASE_URL
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"sslmode": "require"},  # required for Supabase
+    pool_pre_ping=True,
+    connect_args={"prepare_threshold": 0},
     future=True
 )
 

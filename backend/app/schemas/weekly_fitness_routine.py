@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Dict, Any
 from datetime import datetime
+from sqlalchemy import Integer, Column
 from enum import Enum
 
 
@@ -11,7 +12,7 @@ class RoutineStatus(str, Enum):
 
 class WeeklyFitnessRoutineResponse(BaseModel):
     routine_id: str
-    user_id: int
+    user_id : int
     routine_name: str
 
     # 🔥 EXACT LLM OUTPUT — DO NOT TRANSFORM

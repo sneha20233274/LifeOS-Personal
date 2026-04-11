@@ -3,12 +3,12 @@ import { categoryConfigs } from "../app/categoryConfig";
 import { Card } from "./ui/Card";
 import { useEffect } from "react";
 import {
-  useGetAnalyticsMutation,
-  useGetProductivityMutation,
-  useGetWeeklyMutation,
-  useGetTrendMutation,
-  useGetProductivityAverageMutation,
-  useGetInsightsMutation, // ✅ ADD THIS
+  useGetAnalyticsQuery,
+  useGetProductivityQuery,
+  useGetWeeklyQuery,
+  useGetTrendQuery,
+  useGetProductivityAverageQuery,
+  useGetInsightsQuery,
 } from "../services/analyticsApi";
 import { Badge } from "./ui/Badge";
 import { ScrollArea } from "./ui/Scroll-area";
@@ -47,6 +47,7 @@ import { Progress } from "./ui/Progress";
 
 
 export function Dashboard() {
+  const safeData = (res) => res?.data?.data || res?.data || [];
   const productiveCategories = ["work", "learning", "exercise"];
   const neutralCategories = ["admin", "commute", "social"];
   const wastedCategories = ["leisure", "sleep", "other"];
@@ -58,105 +59,84 @@ export function Dashboard() {
         ? [act.summary_category]
         : [],
   });
- 
+ const formatDate = (date) => {
+   const year = date.getFullYear();
+   const month = String(date.getMonth() + 1).padStart(2, "0");
+   const day = String(date.getDate()).padStart(2, "0");
+   return `${year}-${month}-${day}`;
+ };
 
-const [getAnalytics, { data: categoryData }] = useGetAnalyticsMutation();
-const [getProductivity, { data: productivityData }] =
-  useGetProductivityMutation();
-const [getWeekly, { data: weeklyApiData }] = useGetWeeklyMutation();
-const [getTrend, { data: trendApiData }] = useGetTrendMutation();
-const [getProductivityAverage, { data: avgData }] =
-  useGetProductivityAverageMutation();
-  const { data: rawActivities = [] } = useGetActivitiesQuery();
-  const [getInsights, { data: insightsData }] = useGetInsightsMutation();
+ const today = new Date();
+
+ const end = formatDate(today);
+
+ const startDate = new Date();
+ startDate.setDate(today.getDate() - 6);
+
+ const start = formatDate(startDate);
+
+ const filters = {
+   date_range: { start, end },
+ };
+
+ const categoryPayload = {
+   filters,
+   spec: {
+     group_by: "summary_category",
+     aggregation: "sum",
+     field: "duration_minutes",
+   },
+ };
+
+ const weeklyPayload = {
+   filters,
+   spec: {
+     group_by: "day_of_week",
+     aggregation: "sum",
+     field: "duration_minutes",
+   },
+ };
+
+ const avgPayload = {
+   filters,
+   spec: {
+     aggregation: "average",
+     field: "duration_minutes",
+   },
+ };
+
+const { data: categoryData } = useGetAnalyticsQuery(categoryPayload);
+const { data: productivityData } = useGetProductivityQuery(categoryPayload);
+const { data: weeklyApiData } = useGetWeeklyQuery(weeklyPayload);
+const { data: trendApiData } = useGetTrendQuery(weeklyPayload);
+const { data: avgData } = useGetProductivityAverageQuery(avgPayload);
+  const { data: insightsData } = useGetInsightsQuery({ filters });
+ const { data: rawActivities = [] } = useGetActivitiesQuery();
+
+  const activities = rawActivities.map(normalizeActivity);
+  
   console.log("categoryData", categoryData);
   console.log("productivityData", productivityData);
   console.log("weeklyApiData", weeklyApiData);
   console.log("trendApiData", trendApiData);
   console.log("avgData", avgData);
+ 
 
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-indexed
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-  };
-useEffect(() => {
-  const today = new Date();
-
-  const end = formatDate(today);
-
-  const startDate = new Date();
-  startDate.setDate(today.getDate() - 6);
-
-  const start = formatDate(startDate);
-
-  const filters = {
-    date_range: { start, end },
-  };
-
-  const categoryPayload = {
-    filters,
-    spec: {
-      group_by: "summary_category",
-      aggregation: "sum",
-      field: "duration_minutes",
-    },
-  };
-
-  const weeklyPayload = {
-    filters,
-    spec: {
-      group_by: "day_of_week",
-      aggregation: "sum",
-      field: "duration_minutes",
-    },
-  };
-
-  const avgPayload = {
-    filters,
-    spec: {
-      aggregation: "average",
-      field: "duration_minutes",
-    },
-  };
-
-  console.log("DATES:", start, end); // 🔥 debug
-
-  getAnalytics(categoryPayload);
-  getProductivity(categoryPayload);
-  getWeekly(weeklyPayload);
-  getTrend(weeklyPayload);
-  getProductivityAverage(avgPayload);
-
-   getInsights({
-     filters,
-   });
-}, []);
-   
- const isLoading =
-   !categoryData ||
-   !productivityData ||
-   !weeklyApiData ||
-   !trendApiData ||
-   !avgData;
- if (isLoading) {
-    return <div className="text-white p-6">Loading...</div>;
+ if (!categoryData || !weeklyApiData) {
+   return <div className="text-white p-6">Loading...</div>;
  }
   
  
-  const activities = rawActivities.map(normalizeActivity);
 
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const weeklyData = (weeklyApiData?.data || []).map((item) => ({
+const weeklyData = safeData(weeklyApiData).map((item) => ({
   day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][item.day],
   productive: item.productive,
   nonProductive: item.nonProductive,
 }));
 
-const todayData = (categoryData?.data || []).map((item) => ({
+const todayData = safeData(categoryData).map((item) => ({
   ...item,
   name: categoryConfigs[item.name]?.label || item.name,
   category: item.name,
@@ -168,11 +148,11 @@ const todayData = (categoryData?.data || []).map((item) => ({
         curr.value > max.value ? curr : max
       )
     : null;
-
-const productivityTrend = (trendApiData?.data || []).map((item) => ({
+const avgValue = avgData?.data?.average || avgData?.average || 50;
+const productivityTrend = safeData(trendApiData).map((item) => ({
   day: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][item.day],
   score: item.score,
-  baseline: avgData?.average || 50,
+  baseline: avgValue
 }));
 
   const totalMinutes = todayData.reduce((sum, item) => sum + item.value, 0);
@@ -181,9 +161,12 @@ const productivityTrend = (trendApiData?.data || []).map((item) => ({
     .filter((item) => productiveCategories.includes(item.category))
     .reduce((sum, item) => sum + item.value, 0);
 
- const productivityPercentage = productivityData?.productivity
-  ? Math.round(productivityData.productivity * 100)
-  : 0;
+ const productivityValue =
+  productivityData?.data?.productivity ||
+  productivityData?.productivity ||
+  0;
+
+const productivityPercentage = Math.round(productivityValue * 100);
 
   const wastedInvestedData = [
     {
@@ -214,6 +197,8 @@ const productivityTrend = (trendApiData?.data || []).map((item) => ({
       (a, b) => new Date(b.start_ts).getTime() - new Date(a.start_ts).getTime(),
     )
     .slice(0, 8);
+  
+  
 
   const getTimeAgo = (timestamp) => {
     const now = new Date();
@@ -230,7 +215,7 @@ const productivityTrend = (trendApiData?.data || []).map((item) => ({
   console.log("productivityTrend", productivityTrend);
   console.log("wastedInvestedData", wastedInvestedData);
 
-  const insights = insightsData?.insights || [];
+  const insights = insightsData?.data?.insights || insightsData?.insights || [];
   const mappedInsights = insights.map((insight) => {
   let icon = Brain;
   let trend = "neutral";

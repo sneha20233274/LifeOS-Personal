@@ -1,19 +1,19 @@
 from langgraph.checkpoint.postgres import PostgresSaver
-from psycopg_pool import ConnectionPool
-from dotenv import load_dotenv
-load_dotenv()
-
+import psycopg
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL not set")
 
-pool = ConnectionPool(
-    conninfo=DATABASE_URL,
-    min_size=1,
-    max_size=10,
+# convert URL for psycopg
+RAW_DB_URL = DATABASE_URL.replace("postgresql+psycopg://", "postgresql://")
+
+# ✅ create ONE connection (not function)
+conn = psycopg.connect(
+    RAW_DB_URL,
+    prepare_threshold=0,
+    connect_timeout=10,
+    autocommit=True
 )
 
-checkpointer = PostgresSaver(conn=pool)
-
+# ✅ pass connection (correct)
+checkpointer = PostgresSaver(conn=conn)

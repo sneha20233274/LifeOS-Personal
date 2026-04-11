@@ -14,15 +14,19 @@ import { SubtaskProposal } from "./SubtaskProposal";
 export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [localPayload, setLocalPayload] = useState(task.payload);
+  const [localPayload, setLocalPayload] = useState(task.payload || {});
 
   /* -----------------------------
-     YOUR LOGIC (UNCHANGED)
+     ✅ FIXED LOGIC (SAFE + FLEXIBLE)
   ------------------------------ */
-  const subtasksForTask = allSubtasks.filter(
-    (subtask) =>
-      subtask.payload?.depends_on_task_key === task.payload?.temp_task_key
-  );
+
+  const subtasksForTask =
+    task.subtasks || // ✅ new backend format
+    allSubtasks?.filter(
+      (subtask) =>
+        subtask.payload?.depends_on_task_key === task.payload?.temp_task_key,
+    ) ||
+    []; // ✅ old logic fallback
 
   const save = () => {
     onUpdate(task.proposal_id, localPayload);
@@ -59,7 +63,7 @@ export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
                       {key.replace(/_/g, " ")}
                     </label>
                     <input
-                      value={value}
+                      value={value || ""}
                       onChange={(e) =>
                         setLocalPayload((prev) => ({
                           ...prev,
@@ -82,7 +86,7 @@ export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
                 </button>
                 <button
                   onClick={() => {
-                    setLocalPayload(task.payload);
+                    setLocalPayload(task.payload || {});
                     setIsEditing(false);
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg"
@@ -96,8 +100,9 @@ export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
             <>
               <div className="flex items-center gap-3 mb-2">
                 <h3 className="text-lg font-bold text-gray-900">
-                  {task.payload.task_name || "Task"}
+                  {task.payload?.task_name || task.task_name || "Task"}
                 </h3>
+
                 {subtasksForTask.length > 0 && (
                   <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
                     {subtasksForTask.length} subtask
@@ -105,9 +110,10 @@ export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
                   </span>
                 )}
               </div>
-              {task.payload.description && (
+
+              {(task.payload?.description || task.description) && (
                 <p className="text-sm text-gray-700">
-                  {task.payload.description}
+                  {task.payload?.description || task.description}
                 </p>
               )}
             </>
@@ -191,13 +197,13 @@ export function TaskProposal({ task, allSubtasks, onUpdate, onStatusChange }) {
             <AnimatePresence mode="popLayout">
               {subtasksForTask.map((subtask) => (
                 <SubtaskProposal
-                  key={subtask.id}
+                  key={subtask.proposal_id}
                   subtask={subtask}
                   onUpdate={(patch) => onUpdate(subtask.proposal_id, patch)}
                   onStatusChange={(status) =>
                     onStatusChange(subtask.proposal_id, status)
                   }
-                ></SubtaskProposal>
+                />
               ))}
             </AnimatePresence>
           </motion.div>
