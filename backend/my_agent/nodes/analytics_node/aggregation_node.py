@@ -15,9 +15,9 @@ def aggregation_node(state: ChatState, config: RunnableConfig) -> ChatState:
     user_query = state["messages"][-1].content
     configuration = config.get("configurable", {})
     current_user_id = configuration.get("user_id")
-
+    today = date.today()
     messages = [
-        SystemMessage(content=AGG_PROMPT),
+        SystemMessage(content=AGG_PROMPT.format(today=today)),
         HumanMessage(content=user_query),
     ]
 
