@@ -13,7 +13,7 @@ from app.models.user import User
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
-REDIRECT_URI = "https://lifeos-personal-6.onrender.com/integrations/google/auth/callback"
+REDIRECT_URI = "https://lifeos-personal-production.up.railway.app/integrations/google/auth/callback"
 
 import json, hmac, hashlib, base64
 

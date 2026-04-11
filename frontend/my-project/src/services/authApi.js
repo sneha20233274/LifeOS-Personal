@@ -29,7 +29,7 @@ export const authApi = createApi({
           );
 
           // ✅ fetch user
-          const res = await fetch("https://lifeos-personal-6.onrender.com/users/me", {
+          const res = await fetch("https://lifeos-personal-production.up.railway.app/users/me", {
             headers: {
               Authorization: `Bearer ${access}`,
             },
