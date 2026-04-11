@@ -5,7 +5,7 @@ from typing import Literal
 
 
 from my_agent.chatstate import ChatState
-from my_agent.checkpointer import checkpointer
+from my_agent.checkpointer import get_checkpointer
 
 # ---------------- INTENT ----------------
 from my_agent.nodes.intent_resolver_node import intent_resolver_node
@@ -280,4 +280,4 @@ graph.add_edge('daily_context_builder_node','daily_routine_planner_node')
 graph.add_edge('daily_routine_planner_node','proposal_builder')
 
 # ---------------- COMPILE ----------------
-chatbot = graph.compile(checkpointer=checkpointer)
+chatbot = graph.compile(checkpointer=get_checkpointer())
