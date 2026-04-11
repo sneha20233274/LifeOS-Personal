@@ -12,4 +12,7 @@ def get_checkpointer():
         connect_timeout=10,
         autocommit=True
     )
-    return PostgresSaver(conn=conn)
+    checkpointer = PostgresSaver(conn=conn)
+    checkpointer.setup()
+
+    return checkpointer
