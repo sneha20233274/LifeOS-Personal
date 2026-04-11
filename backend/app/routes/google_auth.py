@@ -9,7 +9,10 @@ from app.core.security import get_current_user
 from app.core.config import SECRET_KEY
 from app.models.google_token import GoogleToken
 from app.models.user import User
+import os
+import json
 
+credentials_info = json.loads(os.getenv("GOOGLE_CREDENTIALS"))
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
@@ -60,7 +63,7 @@ def google_login(user: User = Depends(get_current_user)):
     state = sign_state(payload)
 
     flow = Flow.from_client_secrets_file(
-        "credentials.json",
+        credentials_info,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI,
     )
@@ -94,7 +97,7 @@ def google_callback(
     user_id = payload["user_id"]
 
     flow = Flow.from_client_secrets_file(
-        "credentials.json",
+        credentials_info,
         scopes=SCOPES,
         redirect_uri=REDIRECT_URI,
     )
