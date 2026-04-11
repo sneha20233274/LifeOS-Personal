@@ -32,10 +32,12 @@ def run_chat(request: dict, db: Session, user_id: int):
             raise ValueError("thread_id is required")
 
         # ✅ IMPORTANT: DO NOT PASS DB HERE
+        # ✅ CORRECT
         config = {
             "configurable": {
                 "thread_id": thread_id,
                 "user_id": user_id,
+                "db": db   # 🔥 ADD THIS
             }
         }
 

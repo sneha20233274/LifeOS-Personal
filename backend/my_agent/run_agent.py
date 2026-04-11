@@ -23,8 +23,13 @@ def run_agent(
             "iteration": 0,
             "max_iterations": 3,
         },
-        config={"thread_id": thread_id}
-        # LangGraph uses this to store memory per thread.
+        config={
+            "configurable": {
+                "thread_id": thread_id,
+                "user_id": user_id,
+                "db": db
+            }
+        }
     )
 
     # 🔴 Interrupted → save proposals

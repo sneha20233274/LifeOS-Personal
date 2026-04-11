@@ -93,7 +93,9 @@ def resume_chat_controller(
         Command(resume=True),
         config={
             "configurable": {
-                "thread_id": thread_id
+                "thread_id": thread_id,
+                "user_id": user_id,   # 🔥 ADD
+                "db": db              # 🔥 ADD
             }
         }
     )
